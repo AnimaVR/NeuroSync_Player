@@ -13,7 +13,7 @@ from utils.api_utils import save_generated_data, initialize_directories
 from utils.generated_utils import run_audio_animation_from_bytes
 from utils.api_connect import send_audio_to_audio2face
 
-voice_name = 'MaiBritish'
+voice_name = 'Chris1'
 
 if __name__ == "__main__":
     # Initialize directories and other resources
