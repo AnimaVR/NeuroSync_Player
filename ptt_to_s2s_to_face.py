@@ -11,7 +11,7 @@ from utils.eleven_labs import get_speech_to_speech_audio
 from utils.audio.record_audio import record_audio_until_release
 from utils.generated_utils import run_audio_animation_from_bytes
 from utils.api_utils import save_generated_data, initialize_directories
-from utils.api_connect import send_audio_to_audio2face
+from utils.neurosync_api_connect import send_audio_to_audio2face
 
 
 voice_name = 'Chris'
