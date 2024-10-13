@@ -4,7 +4,7 @@ import numpy as np
 import time
 
 from livelink.connect.faceblendshapes import FaceBlendShape
-from utils.api_connect import send_audio_to_audio2face
+from utils.neurosync_api_connect import send_audio_to_audio2face
 from utils.audio.save_audio import audio_to_bytes
 
 FPS = 60
