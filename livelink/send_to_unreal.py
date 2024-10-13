@@ -31,11 +31,25 @@ def send_pre_encoded_data_to_unreal(encoded_facial_data: List[bytes], start_even
             socket_connection = create_socket_connection()
             own_socket = True
 
-        start_event.wait()  
+        start_event.wait()  # Wait until the event signals to start
 
-        for frame_data in encoded_facial_data:
-            socket_connection.sendall(frame_data)
-            time.sleep(1 / fps)
+        frame_duration = 1 / fps  # Time per frame in seconds
+        start_time = time.time()  # Get the initial start time
+
+        for frame_index, frame_data in enumerate(encoded_facial_data):
+            current_time = time.time()
+            elapsed_time = current_time - start_time
+
+            expected_time = frame_index * frame_duration  # Time the current frame should be sent
+
+            # If we are behind schedule, skip the frame
+            if elapsed_time < expected_time:
+                time.sleep(expected_time - elapsed_time)  # Sleep only for the remaining time for this frame
+            elif elapsed_time > expected_time + frame_duration:
+                # We've fallen behind by more than one frame, so continue to realign
+                continue
+
+            socket_connection.sendall(frame_data)  # Send the frame
 
     except KeyboardInterrupt:
         pass
