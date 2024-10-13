@@ -6,9 +6,6 @@ def load_and_preprocess_audio(audio_path, sr=88200):
     if sr != 88200:
         y = librosa.resample(y, orig_sr=sr, target_sr=88200)
         sr = 88200
-    
-
-
     return y, sr
 
 def load_audio(audio_path, sr=88200):
