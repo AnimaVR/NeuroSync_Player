@@ -11,7 +11,7 @@ from livelink.animations.default_animation import default_animation_loop, stop_d
 
 from utils.api_utils import save_generated_data, initialize_directories
 from utils.generated_utils import run_audio_animation_from_bytes
-from utils.api_connect import send_audio_to_audio2face
+from utils.api_connect import send_audio_to_neurosync
 
 voice_name = 'Chris1'
 
@@ -38,7 +38,7 @@ if __name__ == "__main__":
                 
                 if audio_bytes:
                     # Send the audio bytes to the API and get the blendshapes
-                    generated_facial_data = send_audio_to_audio2face(audio_bytes)
+                    generated_facial_data = send_audio_to_neurosync(audio_bytes)
                     
                     if generated_facial_data is not None:
                         # Run the animation using the blendshapes data
