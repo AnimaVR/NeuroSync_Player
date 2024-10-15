@@ -12,7 +12,7 @@ from livelink.connect.livelink_init import create_socket_connection
 from livelink.send_to_unreal import pre_encode_facial_data, send_pre_encoded_data_to_unreal
 from livelink.animations.default_animation import default_animation_loop, stop_default_animation
 
-from utils.neurosync_api_connect import send_audio_to_audio2face
+from utils.neurosync_api_connect import send_audio_to_neurosync
 from utils.csv.save_csv import save_generated_data_as_csv
 from utils.audio.play_audio import play_audio_bytes
 from utils.audio.save_audio import save_audio_file
@@ -93,7 +93,7 @@ def process_preprocessing_queue(request_queue, preprocessed_data_queue):
             break
 
         # Send the audio bytes to the API and get the facial blendshapes
-        generated_facial_data = send_audio_to_audio2face(audio_bytes)
+        generated_facial_data = send_audio_to_neurosync(audio_bytes)
 
         if generated_facial_data is None:
             print("Failed to get facial data from the API.")
