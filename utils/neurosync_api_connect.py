@@ -1,9 +1,33 @@
 import requests
 import json
+import wave
+import io
 
 API_KEY = "YOUR-NEUROSYNC-API-KEY"  # Your API key
 REMOTE_URL = "https://api.neurosync.info/audio_to_blendshapes"  # External API URL
 LOCAL_URL = "http://127.0.0.1:5000/audio_to_blendshapes"  # Local URL
+
+
+def is_wav_audio(audio_bytes):
+    """
+    Validates if the given bytes are a valid WAV audio file.
+    
+    :param audio_bytes: Binary data (audio)
+    :return: True if it's a valid WAV file, False otherwise
+    """
+    try:
+        # Wrap the audio bytes in a BytesIO object to simulate a file
+        with wave.open(io.BytesIO(audio_bytes), 'rb') as wav_file:
+            # Ensure the file contains audio frames
+            if wav_file.getnframes() > 0 and wav_file.getnchannels() > 0:
+                return True
+    except wave.Error:
+        print("Error: The file is not a valid WAV audio file.")
+        return False
+    except Exception as e:
+        print(f"Unexpected error while validating WAV file: {e}")
+        return False
+    return False
 
 def send_audio_to_audio2face(audio_bytes, use_local=False):
     """
@@ -13,8 +37,9 @@ def send_audio_to_audio2face(audio_bytes, use_local=False):
     :param use_local: Boolean flag to switch between local and remote APIs
     :return: List of blendshapes or None on failure
     """
-    if not validate_audio_bytes(audio_bytes):
-        print("Audio bytes are null or empty, skipping send.")
+    # Check if the bytes represent valid WAV audio
+    if not is_wav_audio(audio_bytes):
+        print("The provided audio bytes are not valid WAV audio.")
         return None
 
     try:
@@ -26,6 +51,7 @@ def send_audio_to_audio2face(audio_bytes, use_local=False):
         if not use_local:
             headers["API-Key"] = API_KEY
 
+        # Send the audio bytes to the API
         response = post_audio_bytes(audio_bytes, url, headers)
         response.raise_for_status()  # Raise exception for HTTP errors
         json_response = response.json()
@@ -38,13 +64,20 @@ def send_audio_to_audio2face(audio_bytes, use_local=False):
         print(f"JSON parsing error: {e}")
         return None
 
+
 def read_audio_file_as_bytes(file_path):
     """
-    Reads a file (like a .wav file) and returns its content as bytes.
-
+    Reads a WAV file and returns its content as bytes.
+    Skips unsupported formats and ensures the file is WAV.
+    
     :param file_path: Path to the audio file
-    :return: Audio bytes
+    :return: Audio bytes if the file is a valid WAV file, None otherwise
     """
+    # Ensure the file has a .wav extension
+    if not file_path.lower().endswith('.wav'):
+        print(f"Unsupported file format: {file_path}. Only WAV files are supported.")
+        return None
+
     try:
         with open(file_path, 'rb') as audio_file:
             return audio_file.read()  # Read the file in binary mode and return bytes
