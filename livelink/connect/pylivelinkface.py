@@ -59,7 +59,7 @@ def scale_blendshapes_by_section(blendshapes: List[float], mouth_scale: float, e
                 
                 # Ensure scaling stays within valid range (0.0 to 1.0)
                 if scaled_value > 1.0:
-                    scaled_value = 1.4
+                    scaled_value = 1.0
                 scaled_blendshapes.append(max(scaled_value, 0.0))  # Ensure non-negative
             else:
                 scaled_blendshapes.append(max(value, 0.0))  # Ensure non-negative
@@ -72,7 +72,7 @@ def scale_blendshapes(blendshapes: List[float], scale_factor: float, threshold: 
         if value > threshold:
             scaled_value = value * scale_factor
             if scaled_value > 1.0:
-                scaled_value = 1.4
+                scaled_value = 1.0
             scaled_blendshapes.append(max(scaled_value, 0.0))  # Ensure non-negative
         else:
             scaled_blendshapes.append(max(value, 0.0))  # Ensure non-negative
