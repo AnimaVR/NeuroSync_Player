@@ -3,12 +3,14 @@ import json
 
 API_KEY = "YOUR-NEUROSYNC-API-KEY"  # Your API key
 REMOTE_URL = "https://api.neurosync.info/audio_to_blendshapes"  # External API URL
+LOCAL_URL = "http://127.0.0.1:5000/audio_to_blendshapes"  # Local URL
 
-def send_audio_to_audio2face(audio_bytes):
+def send_audio_to_audio2face(audio_bytes, use_local=False):
     """
     Sends audio bytes to the Audio-to-Face API and returns blendshapes.
 
     :param audio_bytes: Binary data (audio)
+    :param use_local: Boolean flag to switch between local and remote APIs
     :return: List of blendshapes or None on failure
     """
     if not validate_audio_bytes(audio_bytes):
@@ -16,7 +18,15 @@ def send_audio_to_audio2face(audio_bytes):
         return None
 
     try:
-        response = post_audio_bytes(audio_bytes)
+        # Use the local or remote URL depending on the flag
+        url = LOCAL_URL if use_local else REMOTE_URL
+
+        # Only send API key if not using local
+        headers = {}
+        if not use_local:
+            headers["API-Key"] = API_KEY
+
+        response = post_audio_bytes(audio_bytes, url, headers)
         response.raise_for_status()  # Raise exception for HTTP errors
         json_response = response.json()
         return parse_blendshapes_from_json(json_response)
@@ -54,18 +64,17 @@ def validate_audio_bytes(audio_bytes):
     """
     return audio_bytes is not None and len(audio_bytes) > 0
 
-def post_audio_bytes(audio_bytes):
+def post_audio_bytes(audio_bytes, url, headers):
     """
-    Sends audio bytes to the external API.
+    Sends audio bytes to the API (local or remote).
 
     :param audio_bytes: Binary data (audio)
+    :param url: Target API URL (local or remote)
+    :param headers: HTTP headers, including API key if needed
     :return: Response object
     """
-    headers = {
-        "API-Key": API_KEY,
-        "Content-Type": "application/octet-stream"
-    }
-    response = requests.post(REMOTE_URL, headers=headers, data=audio_bytes)
+    headers["Content-Type"] = "application/octet-stream"
+    response = requests.post(url, headers=headers, data=audio_bytes)
     return response
 
 def parse_blendshapes_from_json(json_response):
