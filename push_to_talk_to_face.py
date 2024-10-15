@@ -8,7 +8,7 @@ from livelink.animations.default_animation import default_animation_loop, stop_d
 from utils.audio.record_audio import record_audio_until_release
 from utils.generated_utils import run_audio_animation_from_bytes
 from utils.api_utils import save_generated_data, initialize_directories
-from utils.api_connect import send_audio_to_audio2face
+from utils.api_connect import send_audio_to_neurosync
 
 
 if __name__ == "__main__":
@@ -35,7 +35,7 @@ if __name__ == "__main__":
                     audio_bytes = record_audio_until_release(sr='88200')
                     
                     # Send the recorded audio to the API and get the blendshapes
-                    generated_facial_data = send_audio_to_audio2face(audio_bytes)
+                    generated_facial_data = send_audio_to_neurosync(audio_bytes)
                     
                     if generated_facial_data is None:
                         print("Failed to generate facial data from the API.")
