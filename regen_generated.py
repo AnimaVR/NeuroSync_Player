@@ -5,7 +5,7 @@ import os
 import shutil
 import uuid
 
-from utils.api_connect import send_audio_to_audio2face
+from utils.api_connect import send_audio_to_neurosync
 from utils.csv.save_csv import save_generated_data_as_csv
 
 GENERATED_DIR = 'generated'
@@ -30,7 +30,7 @@ def process_audio_files():
                 audio_bytes = f.read()
             
             # Send audio to the API to generate facial blendshapes
-            generated_facial_data = send_audio_to_audio2face(audio_bytes)
+            generated_facial_data = send_audio_to_neurosync(audio_bytes)
             
             if generated_facial_data is None:
                 print(f"Failed to generate facial data for {audio_path}")
