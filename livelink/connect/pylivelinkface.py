@@ -66,17 +66,6 @@ def scale_blendshapes_by_section(blendshapes: List[float], mouth_scale: float, e
         
         return scaled_blendshapes
 
-def scale_blendshapes(blendshapes: List[float], scale_factor: float, threshold: float = 0.0) -> List[float]:
-    scaled_blendshapes = []
-    for value in blendshapes:
-        if value > threshold:
-            scaled_value = value * scale_factor
-            if scaled_value > 1.0:
-                scaled_value = 1.0
-            scaled_blendshapes.append(max(scaled_value, 0.0))  # Ensure non-negative
-        else:
-            scaled_blendshapes.append(max(value, 0.0))  # Ensure non-negative
-    return scaled_blendshapes
 
 class PyLiveLinkFace:
     def __init__(self, name: str = "Python_LiveLinkFace", uuid: str = str(uuid.uuid1()), fps=60, filter_size: int = 0) -> None:
@@ -124,8 +113,6 @@ class PyLiveLinkFace:
             self._old_blend_shapes[index.value].append(value)
             self._blend_shapes[index.value] = mean(self._old_blend_shapes[index.value])
 
-    def set_scaling_factor(self, scaling_factor: float) -> None:
-        self._scaling_factor = scaling_factor   
     
     def set_scaling_factor_mouth(self, scaling_factor: float) -> None:
         self._scaling_factor_mouth = scaling_factor
