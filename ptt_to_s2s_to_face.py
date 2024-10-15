@@ -11,7 +11,7 @@ from utils.eleven_labs import get_speech_to_speech_audio
 from utils.audio.record_audio import record_audio_until_release
 from utils.generated_utils import run_audio_animation_from_bytes
 from utils.api_utils import save_generated_data, initialize_directories
-from utils.neurosync_api_connect import send_audio_to_audio2face
+from utils.neurosync_api_connect import send_audio_to_neurosync
 
 
 voice_name = 'Chris1'
@@ -47,7 +47,7 @@ if __name__ == "__main__":
                         continue
                     
                     # Send the processed audio bytes to the API to get the facial blendshapes
-                    generated_facial_data = send_audio_to_audio2face(processed_audio_bytes)
+                    generated_facial_data = send_audio_to_neurosync(processed_audio_bytes)
                     
                     if generated_facial_data is None:
                         print("Failed to get facial blendshapes from the API.")
