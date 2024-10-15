@@ -8,7 +8,7 @@ from threading import Thread
 from livelink.connect.livelink_init import create_socket_connection, initialize_py_face
 from livelink.animations.default_animation import default_animation_loop, stop_default_animation
 
-from utils.api_connect import send_audio_to_audio2face, read_audio_file_as_bytes
+from utils.api_connect import send_audio_to_neurosync, read_audio_file_as_bytes
 from utils.api_utils import save_generated_data_from_wav, initialize_directories
 from utils.generated_utils import run_audio_animation
 
@@ -30,7 +30,7 @@ def process_wav_file(wav_file, py_face, socket_connection, default_animation_thr
         return
 
     # Send the audio bytes to the API and get the blendshapes
-    blendshapes = send_audio_to_audio2face(audio_bytes)
+    blendshapes = send_audio_to_neurosync(audio_bytes)
     
     if blendshapes is None:
         print("Failed to get blendshapes from the API.")
