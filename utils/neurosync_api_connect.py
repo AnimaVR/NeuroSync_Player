@@ -2,11 +2,38 @@ import requests
 import json
 import wave
 import io
+from pydub import AudioSegment
 
 API_KEY = "YOUR-NEUROSYNC-API-KEY"  # Your API key
 REMOTE_URL = "https://api.neurosync.info/audio_to_blendshapes"  # External API URL
 LOCAL_URL = "http://127.0.0.1:5000/audio_to_blendshapes"  # Local URL
 
+
+def is_valid_audio(audio_bytes):
+    """
+    Validates if the given bytes are a valid audio file (either WAV, MP3, or another supported format).
+    
+    :param audio_bytes: Binary data (audio)
+    :return: True if it's a valid audio file, False otherwise
+    """
+    # First, check if it's a WAV file
+    if is_wav_audio(audio_bytes):
+        print("Valid WAV audio file detected.")
+        return True
+    
+    # If not a WAV, check if it's a valid MP3 or other format using pydub
+    try:
+        # Try to load the audio with pydub (supports MP3 and other formats)
+        audio = AudioSegment.from_file(io.BytesIO(audio_bytes))
+        if len(audio) > 0 and audio.channels > 0:
+            print(f"Valid {audio.format} audio file detected with {audio.channels} channels and {len(audio)} ms duration.")
+            return True
+        else:
+            print("Invalid audio file: no audio frames detected.")
+            return False
+    except Exception as e:
+        print(f"Error: Could not validate the audio file. {e}")
+        return False
 
 def is_wav_audio(audio_bytes):
     """
@@ -38,8 +65,8 @@ def send_audio_to_neurosync(audio_bytes, use_local=False):
     :return: List of blendshapes or None on failure
     """
     # Check if the bytes represent valid WAV audio
-    if not is_wav_audio(audio_bytes):
-        print("The provided audio bytes are not valid WAV audio.")
+    if not is_valid_audio(audio_bytes):
+        print("The provided audio bytes are not valid audio.")
         return None
 
     try:
