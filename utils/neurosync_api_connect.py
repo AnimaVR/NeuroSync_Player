@@ -1,8 +1,5 @@
 import requests
 import json
-import wave
-import io
-from pydub import AudioSegment
 
 API_KEY = "YOUR-NEUROSYNC-API-KEY"  # Your API key
 REMOTE_URL = "https://api.neurosync.info/audio_to_blendshapes"  # External API URL
