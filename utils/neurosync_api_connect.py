@@ -29,7 +29,7 @@ def is_wav_audio(audio_bytes):
         return False
     return False
 
-def send_audio_to_audio2face(audio_bytes, use_local=False):
+def send_audio_to_neurosync(audio_bytes, use_local=False):
     """
     Sends audio bytes to the Audio-to-Face API and returns blendshapes.
 
