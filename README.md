@@ -1,11 +1,23 @@
-# NeuroSync_Player
-Some code to test the api.
+# NeuroSync Player
 
-This will stream directly into Unreal Engine via Livelink using the ARKit plugin. Create a UE5 project, add a metahuman and enable livelink for the face.
+## Overview
 
-Go to /utils/neurosync_api_connect.py and enter your api key.
-Add your elevenlabs key in the elevenlabs file in utils too, or pipe your own in with the mic or a wave instead with the other py samples.
+The **NeuroSync Player** allows for real-time streaming of facial blendshapes into Unreal Engine 5 using LiveLink. This player integrates seamlessly with the **NeuroSync audio-to-face blendshape model**, enabling facial animation from audio input.
 
-This is to get you started with Neurosync, livelink and UE5 integration - not meant for production.
+### Features:
+- Real-time facial animation
+- Integration with Unreal Engine 5 via LiveLink
+- Supports blendshapes generated from audio inputs
 
-Visit https://neurosync.info to apply for alpha access!
+## Get Started
+
+Refer to our [YouTube channel](https://www.youtube.com/@animaai_mai) where we showcase the latest progress on the training, player and tools.
+
+## NeuroSync Model
+
+To generate facial blendshapes from audio, you'll need the **NeuroSync audio-to-face blendshape transformer model**. You can:
+
+- [Download the model from Hugging Face](https://huggingface.co/AnimaVR/NEUROSYNC_Audio_To_Face_Blendshape)
+- [Apply for Alpha API access](https://neurosync.info) to use the model without locally hosting it.
+
+Visit [neurosync.info](https://neurosync.info) for more information or to sign up for alpha access.
