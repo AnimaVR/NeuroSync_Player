@@ -75,9 +75,9 @@ class PyLiveLinkFace:
         self._filter_size = filter_size
         self._version = 6
         
-        self._scaling_factor_mouth = 1.6
-        self._scaling_factor_eyes = 1.0
-        self._scaling_factor_eyebrows = 0.6
+        self._scaling_factor_mouth = 1.4
+        self._scaling_factor_eyes = 0.8
+        self._scaling_factor_eyebrows = 0.4
 
         now = datetime.datetime.now()
         timcode = Timecode(self.fps, f'{now.hour}:{now.minute}:{now.second}:{now.microsecond * 0.001}')
