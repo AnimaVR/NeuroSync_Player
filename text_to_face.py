@@ -11,7 +11,7 @@ from livelink.animations.default_animation import default_animation_loop, stop_d
 
 from utils.api_utils import save_generated_data, initialize_directories
 from utils.generated_utils import run_audio_animation_from_bytes
-from utils.api_connect import send_audio_to_neurosync
+from utils.neurosync_api_connect import send_audio_to_neurosync
 
 voice_name = 'Chris1'
 
