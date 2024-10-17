@@ -5,7 +5,7 @@ import os
 import shutil
 import uuid
 
-from utils.api_connect import send_audio_to_neurosync
+from utils.neurosync_api_connect import send_audio_to_neurosync
 from utils.csv.save_csv import save_generated_data_as_csv
 
 GENERATED_DIR = 'generated'
