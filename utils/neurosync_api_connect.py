@@ -57,4 +57,3 @@ def parse_blendshapes_from_json(json_response):
         facial_data.append(frame_data)
 
     return facial_data
-    return facial_data
