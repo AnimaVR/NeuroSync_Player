@@ -4,8 +4,7 @@
 
 The **NeuroSync Player** allows for real-time streaming of facial blendshapes into Unreal Engine 5 using LiveLink - enabling facial animation from audio input.
 
-![Alt text](./utils/neurosynclose.jpeg)
-
+![Alt text](/utils/neurosynclose.jpeg)
 
 ### Features:
 - Real-time facial animation
