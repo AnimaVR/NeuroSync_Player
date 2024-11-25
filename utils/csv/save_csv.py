@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-def save_generated_data_as_csv(generated, output_path, include_emotion_dimensions=True):
+def save_generated_data_as_csv(generated, output_path, include_emotion_dimensions=False):
     # Base columns for blendshape data
     base_columns = [
         'Timecode', 'BlendshapeCount', 'EyeBlinkLeft', 'EyeLookDownLeft', 'EyeLookInLeft', 'EyeLookOutLeft', 'EyeLookUpLeft', 
