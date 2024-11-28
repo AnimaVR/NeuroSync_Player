@@ -1,5 +1,9 @@
 # NeuroSync Player
 
+## Talk to a NeuroSync prototype live on Twitch : [Visit Mai](https://www.twitch.tv/mai_anima_ai)
+
+![Alt text](/utils/catears.png)
+
 ## Overview
 
 The **NeuroSync Player** allows for real-time streaming of facial blendshapes into Unreal Engine 5 using LiveLink - enabling facial animation from audio input.
