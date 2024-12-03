@@ -2,7 +2,7 @@
 
 ## Talk to a NeuroSync prototype live on Twitch : [Visit Mai](https://www.twitch.tv/mai_anima_ai)
 
-![Alt text](/utils/catears.png)
+![Alt text](/utils/catears2.png)
 
 ## Overview
 
