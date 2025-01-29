@@ -18,19 +18,21 @@ def save_generated_data_as_csv(generated, output_path, include_emotion_dimension
     # Emotion dimensions (optional)
     emotion_columns = ['Angry', 'Disgusted', 'Fearful', 'Happy', 'Neutral', 'Sad', 'Surprised']
     
-    # Include emotion dimensions conditionally
-    if include_emotion_dimensions:
-        columns = base_columns + emotion_columns
-    else:
-        columns = base_columns
-
     # Convert the generated list to a NumPy array
     generated = np.array(generated)
-    
-    # Reshape the array to match the column count
-    total_columns = len(columns) - 2  # Subtract Timecode and BlendshapeCount columns
-    generated = generated.reshape(-1, total_columns)
-    
+
+    # Ensure the input has exactly 68 columns
+    if generated.shape[1] != 68:
+        raise ValueError(f"Expected generated data to have 68 columns, but got {generated.shape[1]}")
+
+    # Select only the necessary columns based on `include_emotion_dimensions`
+    if include_emotion_dimensions:
+        selected_columns = base_columns + emotion_columns
+        selected_data = generated  # Keep all 68 dimensions
+    else:
+        selected_columns = base_columns
+        selected_data = generated[:, :len(base_columns) - 2]  # Keep only the first 59 columns
+
     # Generate timecodes
     frame_count = generated.shape[0]
     frame_rate = 60  # 60 FPS
@@ -49,12 +51,12 @@ def save_generated_data_as_csv(generated, output_path, include_emotion_dimension
 
     # Add timecodes and blendshape counts
     timecodes = np.array(timecodes).reshape(-1, 1)
-    blendshape_counts = np.full((frame_count, 1), generated.shape[1])
+    blendshape_counts = np.full((frame_count, 1), selected_data.shape[1])
 
     # Stack the data together
-    data = np.hstack((timecodes, blendshape_counts, generated))
+    data = np.hstack((timecodes, blendshape_counts, selected_data))
 
     # Create a DataFrame and save to CSV
-    df = pd.DataFrame(data, columns=columns)
+    df = pd.DataFrame(data, columns=selected_columns)
     df.to_csv(output_path, index=False)
     print(f"Generated data saved to {output_path}")
