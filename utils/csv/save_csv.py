@@ -31,7 +31,7 @@ def save_generated_data_as_csv(generated, output_path, include_emotion_dimension
         selected_data = generated  # Keep all 68 dimensions
     else:
         selected_columns = base_columns
-        selected_data = generated[:, :len(base_columns) - 2]  # Keep only the first 59 columns
+        selected_data = generated[:, :len(base_columns) - 2] 
 
     # Generate timecodes
     frame_count = generated.shape[0]
