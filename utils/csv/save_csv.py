@@ -21,10 +21,6 @@ def save_generated_data_as_csv(generated, output_path, include_emotion_dimension
     # Convert the generated list to a NumPy array
     generated = np.array(generated)
 
-    # Ensure input has exactly 68 columns (61 blendshapes + 7 emotions)
-    if generated.shape[1] != 68:
-        raise ValueError(f"Expected generated data to have 68 columns, but got {generated.shape[1]}")
-
     # Select only the necessary columns based on `include_emotion_dimensions`
     if include_emotion_dimensions:
         selected_columns = base_columns + emotion_columns  # Keep all 68 columns
