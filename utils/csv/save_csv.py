@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-def save_generated_data_as_csv(generated, output_path, include_emotion_dimensions=True):
+def save_generated_data_as_csv(generated, output_path):
     # Base columns (Blendshape data)
     base_columns = [
         'Timecode', 'BlendshapeCount', 'EyeBlinkLeft', 'EyeLookDownLeft', 'EyeLookInLeft', 'EyeLookOutLeft', 'EyeLookUpLeft', 
@@ -15,19 +15,23 @@ def save_generated_data_as_csv(generated, output_path, include_emotion_dimension
         'LeftEyeYaw', 'LeftEyePitch', 'LeftEyeRoll', 'RightEyeYaw', 'RightEyePitch', 'RightEyeRoll'
     ]
     
-    # Emotion columns (optional)
+    # Emotion columns
     emotion_columns = ['Angry', 'Disgusted', 'Fearful', 'Happy', 'Neutral', 'Sad', 'Surprised']
 
     # Convert the generated list to a NumPy array
     generated = np.array(generated)
 
-    # Select only the necessary columns based on `include_emotion_dimensions`
-    if include_emotion_dimensions:
-        selected_columns = base_columns + emotion_columns  # Keep all 68 columns
+    # Determine the number of dimensions
+    num_dimensions = generated.shape[1]  # Number of columns in the generated data
+    if num_dimensions == 68:
+        selected_columns = base_columns + emotion_columns  # Include emotions
         selected_data = generated  # Keep all 68 columns
+    elif num_dimensions == 61:
+        selected_columns = base_columns  # Only blendshape columns
+        selected_data = generated[:, :61]  # Keep only the first 61 columns
     else:
-        selected_columns = base_columns  # Keep only the first 61 blendshape columns
-        selected_data = generated[:, :61]  # Fix: Slice only the first 61 columns
+        raise ValueError(f"Unexpected number of columns: {num_dimensions}. Expected 61 or 68.")
+
 
     # Generate timecodes
     frame_count = generated.shape[0]
