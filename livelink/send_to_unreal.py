@@ -26,9 +26,7 @@ def pre_encode_facial_data(facial_data: List[np.ndarray], py_face, fps: int = 60
 
 
 
-def send_pre_encoded_data_to_unreal(
-    encoded_facial_data: List[bytes], start_event, fps: int, socket_connection=None
-):
+def send_pre_encoded_data_to_unreal(encoded_facial_data: List[bytes], start_event, fps: int, socket_connection=None):
     try:
         own_socket = False
         if socket_connection is None:
@@ -38,15 +36,20 @@ def send_pre_encoded_data_to_unreal(
         start_event.wait()  # Wait until the event signals to start
 
         frame_duration = 1 / fps  # Time per frame in seconds
-        start_time = time.time()  # Real-world start time reference
+        start_time = time.time()  # Get the initial start time
 
         for frame_index, frame_data in enumerate(encoded_facial_data):
-            expected_time = start_time + (frame_index * frame_duration)
             current_time = time.time()
+            elapsed_time = current_time - start_time
 
-            # If we are behind schedule, send the frame immediately without sleeping
-            if current_time < expected_time:
-                time.sleep(expected_time - current_time)  # Sleep just enough to stay on track
+            expected_time = frame_index * frame_duration  # Time the current frame should be sent
+
+            # If we are behind schedule, skip the frame
+            if elapsed_time < expected_time:
+                time.sleep(expected_time - elapsed_time)  # Sleep only for the remaining time for this frame
+            elif elapsed_time > expected_time + frame_duration:
+                # We've fallen behind by more than one frame, so continue to realign
+                continue
 
             socket_connection.sendall(frame_data)  # Send the frame
 
@@ -54,4 +57,4 @@ def send_pre_encoded_data_to_unreal(
         pass
     finally:
         if own_socket:
-            socket_connection.close()
+            socket_connection.close() 
