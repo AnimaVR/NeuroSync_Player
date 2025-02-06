@@ -32,10 +32,6 @@ def load_facial_data_from_csv(csv_path):
     return data.values
 
 def run_audio_animation(audio_path, generated_facial_data, py_face, socket_connection, default_animation_thread):
-    # *** CHANGED: Pre-encode the facial data BEFORE stopping the default animation ***
-    encoded_facial_data = pre_encode_facial_data(generated_facial_data, py_face)
-    
-    # Now that the generated data is ready, stop the default animation.
     with queue_lock:
         stop_default_animation.set()
         if default_animation_thread and default_animation_thread.is_alive():
@@ -43,38 +39,39 @@ def run_audio_animation(audio_path, generated_facial_data, py_face, socket_conne
 
     start_event = Event()
 
-    # Create the threads for audio and animation playback.
+    # Pre-encode the facial data
+    encoded_facial_data = pre_encode_facial_data(generated_facial_data, py_face)
+
+    # Create the threads for audio and animation playback
     audio_thread = Thread(target=play_audio_from_path, args=(audio_path, start_event))
     data_thread = Thread(target=send_pre_encoded_data_to_unreal, args=(encoded_facial_data, start_event, 60, socket_connection))
 
-    # Start the threads.
+    # Start the threads
     audio_thread.start()
     data_thread.start()
     
-    # Trigger the start event.
+    # Trigger the start event
     start_event.set()
     
-    # Wait for both threads to finish.
+    # Wait for both threads to finish
     audio_thread.join()
     data_thread.join()
 
-    # Restart the default animation.
+    # Restart the default animation
     with queue_lock:
         stop_default_animation.clear()
         default_animation_thread = Thread(target=default_animation_loop, args=(py_face,))
         default_animation_thread.start()
-
+        
 def run_audio_animation_from_bytes(audio_bytes, generated_facial_data, py_face, socket_connection, default_animation_thread):
-    # *** CHANGED: Pre-encode the facial data BEFORE stopping the default animation ***
-    encoded_facial_data = pre_encode_facial_data(generated_facial_data, py_face)
-    
-    # Now that the generated data is ready, stop the default animation.
     with queue_lock:
         stop_default_animation.set()
         if default_animation_thread and default_animation_thread.is_alive():
             default_animation_thread.join()
 
     start_event = Event()
+
+    encoded_facial_data = pre_encode_facial_data(generated_facial_data, py_face)
 
     audio_thread = Thread(target=play_audio_from_memory, args=(audio_bytes, start_event))
     data_thread = Thread(target=send_pre_encoded_data_to_unreal, args=(encoded_facial_data, start_event, 60, socket_connection))
