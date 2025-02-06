@@ -32,15 +32,15 @@ def load_facial_data_from_csv(csv_path):
     return data.values
 
 def run_audio_animation(audio_path, generated_facial_data, py_face, socket_connection, default_animation_thread):
+    
+    encoded_facial_data = pre_encode_facial_data(generated_facial_data, py_face) #duuuuh
+    
     with queue_lock:
         stop_default_animation.set()
         if default_animation_thread and default_animation_thread.is_alive():
             default_animation_thread.join()
 
-    start_event = Event()
-
-    # Pre-encode the facial data
-    encoded_facial_data = pre_encode_facial_data(generated_facial_data, py_face)
+    start_event = Event()   
 
     # Create the threads for audio and animation playback
     audio_thread = Thread(target=play_audio_from_path, args=(audio_path, start_event))
@@ -64,14 +64,15 @@ def run_audio_animation(audio_path, generated_facial_data, py_face, socket_conne
         default_animation_thread.start()
         
 def run_audio_animation_from_bytes(audio_bytes, generated_facial_data, py_face, socket_connection, default_animation_thread):
+    
+    encoded_facial_data = pre_encode_facial_data(generated_facial_data, py_face) #duuuuh
+    
     with queue_lock:
         stop_default_animation.set()
         if default_animation_thread and default_animation_thread.is_alive():
             default_animation_thread.join()
 
     start_event = Event()
-
-    encoded_facial_data = pre_encode_facial_data(generated_facial_data, py_face)
 
     audio_thread = Thread(target=play_audio_from_memory, args=(audio_bytes, start_event))
     data_thread = Thread(target=send_pre_encoded_data_to_unreal, args=(encoded_facial_data, start_event, 60, socket_connection))
