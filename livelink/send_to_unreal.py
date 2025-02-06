@@ -38,17 +38,17 @@ def send_pre_encoded_data_to_unreal(
         start_event.wait()  # Wait until the event signals to start
 
         frame_duration = 1 / fps  # Time per frame in seconds
-        next_frame_time = time.time()  # Track the time for the next frame
+        start_time = time.time()  # Real-world start time reference
 
-        for frame_data in encoded_facial_data:
+        for frame_index, frame_data in enumerate(encoded_facial_data):
+            expected_time = start_time + (frame_index * frame_duration)
             current_time = time.time()
 
-            # Sleep only if we are ahead of schedule
-            if current_time < next_frame_time:
-                time.sleep(next_frame_time - current_time)
+            # If we are behind schedule, send the frame immediately without sleeping
+            if current_time < expected_time:
+                time.sleep(expected_time - current_time)  # Sleep just enough to stay on track
 
             socket_connection.sendall(frame_data)  # Send the frame
-            next_frame_time = time.time() + frame_duration  # Reset next frame time to maintain a steady rate
 
     except KeyboardInterrupt:
         pass
