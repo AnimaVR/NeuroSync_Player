@@ -26,7 +26,9 @@ def pre_encode_facial_data(facial_data: List[np.ndarray], py_face, fps: int = 60
 
 
 
-def send_pre_encoded_data_to_unreal(encoded_facial_data: List[bytes], start_event, fps: int, socket_connection=None, force_60fps=False):
+def send_pre_encoded_data_to_unreal(
+    encoded_facial_data: List[bytes], start_event, fps: int, socket_connection=None
+):
     try:
         own_socket = False
         if socket_connection is None:
@@ -36,24 +38,17 @@ def send_pre_encoded_data_to_unreal(encoded_facial_data: List[bytes], start_even
         start_event.wait()  # Wait until the event signals to start
 
         frame_duration = 1 / fps  # Time per frame in seconds
-        start_time = time.time()  # Get the initial start time
+        next_frame_time = time.time()  # Track the time for the next frame
 
-        for frame_index, frame_data in enumerate(encoded_facial_data):
-            if force_60fps:
-                socket_connection.sendall(frame_data)
-                time.sleep(1 / 60)  # Send at fixed 60 FPS
-                continue  # Skip alignment check
-
+        for frame_data in encoded_facial_data:
             current_time = time.time()
-            elapsed_time = current_time - start_time
-            expected_time = frame_index * frame_duration 
 
-            if elapsed_time < expected_time:
-                time.sleep(expected_time - elapsed_time) 
-            elif elapsed_time > expected_time + frame_duration:
-                continue  # Skip delayed frames
+            # Sleep only if we are ahead of schedule
+            if current_time < next_frame_time:
+                time.sleep(next_frame_time - current_time)
 
             socket_connection.sendall(frame_data)  # Send the frame
+            next_frame_time = time.time() + frame_duration  # Reset next frame time to maintain a steady rate
 
     except KeyboardInterrupt:
         pass
