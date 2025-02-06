@@ -25,9 +25,8 @@ def pre_encode_facial_data(facial_data: List[np.ndarray], py_face, fps: int = 60
     return encoded_data
 
 
-def send_pre_encoded_data_to_unreal(
-    encoded_facial_data: List[bytes], start_event, fps: int, socket_connection=None, realign_frames=False
-):
+
+def send_pre_encoded_data_to_unreal(encoded_facial_data: List[bytes], start_event, fps: int, socket_connection=None, force_60fps=False):
     try:
         own_socket = False
         if socket_connection is None:
@@ -40,18 +39,19 @@ def send_pre_encoded_data_to_unreal(
         start_time = time.time()  # Get the initial start time
 
         for frame_index, frame_data in enumerate(encoded_facial_data):
+            if force_60fps:
+                socket_connection.sendall(frame_data)
+                time.sleep(1 / 60)  # Send at fixed 60 FPS
+                continue  # Skip alignment check
+
             current_time = time.time()
             elapsed_time = current_time - start_time
+            expected_time = frame_index * frame_duration 
 
-            expected_time = frame_index * frame_duration  # Time the current frame should be sent
-
-            if realign_frames:
-                # If we are behind schedule, skip the frame
-                if elapsed_time < expected_time:
-                    time.sleep(expected_time - elapsed_time)  # Sleep only for the remaining time for this frame
-                elif elapsed_time > expected_time + frame_duration:
-                    # We've fallen behind by more than one frame, so continue to realign
-                    continue
+            if elapsed_time < expected_time:
+                time.sleep(expected_time - elapsed_time) 
+            elif elapsed_time > expected_time + frame_duration:
+                continue  # Skip delayed frames
 
             socket_connection.sendall(frame_data)  # Send the frame
 
