@@ -1,13 +1,13 @@
+# send_to_unreal.py
+
 import time
 import numpy as np
 from typing import List
-
+from threading import Thread
 from livelink.connect.livelink_init import create_socket_connection, FaceBlendShape
-
 from livelink.animations.blending_anims import blend_in, blend_out  
 
 def pre_encode_facial_data(facial_data: List[np.ndarray], py_face, fps: int = 60) -> List[bytes]:
-
     encoded_data = []
 
     blend_in_frames = int(0.05 * fps)
@@ -27,34 +27,66 @@ def pre_encode_facial_data(facial_data: List[np.ndarray], py_face, fps: int = 60
 
 
 def send_pre_encoded_data_to_unreal(encoded_facial_data: List[bytes], start_event, fps: int, socket_connection=None):
-    try:
+    """
+    This function creates a dedicated sender thread which sends frames at precisely
+    calculated intervals. If the sender is too late for a frame (i.e. due to CPU stutter),
+    it will skip that frame to try and catch up.
+    
+    The basic logic is:
+      - Wait for the start signal.
+      - Calculate the scheduled time for each frame.
+      - Sleep until that time if possible.
+      - If already too late (more than one frame duration behind), skip the frame.
+      - Otherwise, send the frame.
+    
+    The sender thread is created and started inside this function.
+    """
+    def sender():
+        # Create a socket if one wasn't provided.
         own_socket = False
         if socket_connection is None:
-            socket_connection = create_socket_connection()
+            sock = create_socket_connection()
             own_socket = True
+        else:
+            sock = socket_connection
 
-        start_event.wait()  # Wait until the event signals to start
+        # Wait for the signal to start sending frames.
+        start_event.wait()
 
-        frame_duration = 1 / fps  # Time per frame in seconds
-        start_time = time.time()  # Get the initial start time
+        frame_duration = 1.0 / fps  # seconds per frame
+        total_frames = len(encoded_facial_data)
+        start_time = time.perf_counter()
 
-        for frame_index, frame_data in enumerate(encoded_facial_data):
-            current_time = time.time()
-            elapsed_time = current_time - start_time
+        i = 0
+        while i < total_frames:
+            # Calculate the ideal send time for the current frame.
+            scheduled_time = start_time + i * frame_duration
+            now = time.perf_counter()
 
-            expected_time = frame_index * frame_duration  # Time the current frame should be sent
+            # If we are early, sleep until it is time.
+            if now < scheduled_time:
+                time.sleep(scheduled_time - now)
+                now = time.perf_counter()
 
-            # If we are behind schedule, skip the frame
-            if elapsed_time < expected_time:
-                time.sleep(expected_time - elapsed_time)  # Sleep only for the remaining time for this frame
-            elif elapsed_time > expected_time + frame_duration:
-                # We've fallen behind by more than one frame, so continue to realign
+            # If we're too late for this frame, skip it.
+            # (Here the threshold is one full frame; adjust if you want a more or less aggressive skip.)
+            if now - scheduled_time > frame_duration:
+                # Optionally, log or count skipped frames here.
+                i += 1
                 continue
 
-            socket_connection.sendall(frame_data)  # Send the frame
+            try:
+                sock.sendall(encoded_facial_data[i])
+            except Exception as e:
+                print(f"Error sending frame {i}: {e}")
+            i += 1
 
-    except KeyboardInterrupt:
-        pass
-    finally:
         if own_socket:
-            socket_connection.close() 
+            sock.close()
+
+    # Create and start the sender thread.
+    sender_thread = Thread(target=sender, name="FrameSenderThread")
+    sender_thread.daemon = True  
+    sender_thread.start()
+
+    return sender_thread 
