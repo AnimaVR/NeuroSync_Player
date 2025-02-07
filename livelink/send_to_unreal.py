@@ -1,13 +1,14 @@
 # send_to_unreal.py
-
 import time
 import numpy as np
 from typing import List
-from threading import Thread
+
 from livelink.connect.livelink_init import create_socket_connection, FaceBlendShape
+
 from livelink.animations.blending_anims import blend_in, blend_out  
 
 def pre_encode_facial_data(facial_data: List[np.ndarray], py_face, fps: int = 60) -> List[bytes]:
+
     encoded_data = []
 
     blend_in_frames = int(0.05 * fps)
@@ -25,54 +26,31 @@ def pre_encode_facial_data(facial_data: List[np.ndarray], py_face, fps: int = 60
     return encoded_data
 
 def send_pre_encoded_data_to_unreal(encoded_facial_data: List[bytes], start_event, fps: int, socket_connection=None):
-    """
-    Creates a dedicated sender thread that sends frames at precisely calculated intervals.
-    It uses a combination of sleep (for low CPU load) and a brief busy-wait for high accuracy.
-    All frames are sent (even if behind schedule) to ensure synchronization with the audio.
-    """
-    def sender():
-        # Create a socket if none is provided.
+    try:
         own_socket = False
         if socket_connection is None:
-            sock = create_socket_connection()
+            socket_connection = create_socket_connection()
             own_socket = True
-        else:
-            sock = socket_connection
 
-        # Wait for the start signal.
-        start_event.wait()
+        start_event.wait()  # Wait until the event signals to start
 
-        frame_duration = 1.0 / fps  # seconds per frame
-        total_frames = len(encoded_facial_data)
-        start_time = time.perf_counter()
+        frame_duration = 1 / fps  # Time per frame in seconds
+        start_time = time.time()  # Get the initial start time
 
-        i = 0
-        while i < total_frames:
-            scheduled_time = start_time + i * frame_duration
-            now = time.perf_counter()
-            delta = scheduled_time - now
+        for frame_index, frame_data in enumerate(encoded_facial_data):
+            current_time = time.time()
+            elapsed_time = current_time - start_time
 
-            if delta > 0:
-                # Sleep most of the remaining time if it is sufficiently long.
-                if delta > 0.005:  # if more than 5 ms remain
-                    time.sleep(delta - 0.002)  # sleep leaving ~2ms remaining
-                # Busy-wait for the final few milliseconds.
-                while time.perf_counter() < scheduled_time:
-                    pass
+            expected_time = frame_index * frame_duration 
+            if elapsed_time < expected_time:
+                time.sleep(expected_time - elapsed_time) 
+            elif elapsed_time > expected_time + frame_duration:
+                continue
 
-            try:
-                # Use send() instead of sendall() for UDP datagrams.
-                sent_bytes = sock.send(encoded_facial_data[i])
-                if sent_bytes != len(encoded_facial_data[i]):
-                    print(f"Warning: Incomplete send on frame {i}: sent {sent_bytes} of {len(encoded_facial_data[i])} bytes.")
-            except Exception as e:
-                print(f"Error sending frame {i}: {e}")
-            i += 1
+            socket_connection.sendall(frame_data)  # Send the frame
 
+    except KeyboardInterrupt:
+        pass
+    finally:
         if own_socket:
-            sock.close()
-
-    sender_thread = Thread(target=sender, name="FrameSenderThread")
-    sender_thread.daemon = True
-    sender_thread.start()
-    return sender_thread
+            socket_connection.close()
