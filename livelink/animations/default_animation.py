@@ -45,9 +45,23 @@ def default_animation_loop(py_face):
         s.connect((UDP_IP, UDP_PORT))
         while not stop_default_animation.is_set():
             for frame in blended_animation_data:
+                # Check before processing each frame
                 if stop_default_animation.is_set():
                     break
+
+                # Apply the frame blendshapes
                 for i, value in enumerate(frame):
                     py_face.set_blendshape(FaceBlendShape(i), float(value))
-                s.sendall(py_face.encode())
-                time.sleep(1 / 60)
+                
+                # Send the frame
+                try:
+                    s.sendall(py_face.encode())
+                except Exception as e:
+                    print(f"Error in default animation sending: {e}")
+                
+                # Instead of one long sleep, break it into short chunks
+                total_sleep = 1 / 60
+                sleep_interval = 0.005  # check every 5ms
+                while total_sleep > 0 and not stop_default_animation.is_set():
+                    time.sleep(min(sleep_interval, total_sleep))
+                    total_sleep -= sleep_interval
