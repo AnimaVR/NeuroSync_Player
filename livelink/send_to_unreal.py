@@ -28,7 +28,7 @@ def send_pre_encoded_data_to_unreal(encoded_facial_data: List[bytes], start_even
     """
     Creates a dedicated sender thread that sends frames at precisely calculated intervals.
     It uses a combination of sleep (for low CPU load) and a brief busy-wait for high accuracy.
-    If the sender is too late (more than one frame duration behind), the frame is skipped.
+    All frames are sent (even if behind schedule) to ensure synchronization with the audio.
     """
     def sender():
         # Create a socket if none is provided.
@@ -59,19 +59,12 @@ def send_pre_encoded_data_to_unreal(encoded_facial_data: List[bytes], start_even
                 # Busy-wait for the final few milliseconds.
                 while time.perf_counter() < scheduled_time:
                     pass
-            else:
-                # If we're more than one frame behind, skip this frame.
-                if abs(delta) > frame_duration:
-                    i += 1
-                    continue
 
             try:
-               
                 # Use send() instead of sendall() for UDP datagrams.
                 sent_bytes = sock.send(encoded_facial_data[i])
                 if sent_bytes != len(encoded_facial_data[i]):
                     print(f"Warning: Incomplete send on frame {i}: sent {sent_bytes} of {len(encoded_facial_data[i])} bytes.")
-      
             except Exception as e:
                 print(f"Error sending frame {i}: {e}")
             i += 1
