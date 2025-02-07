@@ -1,7 +1,8 @@
 # This code is licensed under the Creative Commons Attribution-NonCommercial 4.0 International License.
 # For more details, visit: https://creativecommons.org/licenses/by-nc/4.0/
 
-# generated_utils.py
+# In generated_utils.py
+
 import os
 import pandas as pd
 from threading import Thread, Event
@@ -32,17 +33,16 @@ def load_facial_data_from_csv(csv_path):
 def run_audio_animation(audio_path, generated_facial_data, py_face, socket_connection, default_animation_thread):
     # --- Pre-encode in its own thread and wait until it's done ---
     pre_encode_done = Event()
-    encoded_holder = {} 
+    encoded_holder = {}  # Use a dict to hold the encoded data
 
     def pre_encode_worker():
-        # This will take some time – ensure it completes before we move on
         encoded_holder['data'] = pre_encode_facial_data(generated_facial_data, py_face)
         pre_encode_done.set()
 
     pre_encode_thread = Thread(target=pre_encode_worker, name="PreEncodeThread")
     pre_encode_thread.start()
     pre_encode_done.wait()       # Wait for pre-encoding to finish
-    pre_encode_thread.join()     # Ensure thread cleanup
+    pre_encode_thread.join()     # Ensure cleanup
     encoded_facial_data = encoded_holder['data']
     # ----------------------------------------------------------------
 
@@ -53,10 +53,11 @@ def run_audio_animation(audio_path, generated_facial_data, py_face, socket_conne
 
     start_event = Event()
 
-    # Start the audio and animation playback in their own threads.
+    # Start the audio playback thread
     audio_thread = Thread(target=play_audio_from_path, args=(audio_path, start_event))
-    # Use the revised sending function that has its own timing thread internally
-    data_thread = Thread(target=send_pre_encoded_data_to_unreal, args=(encoded_facial_data, start_event, 60, socket_connection))
+    # Start the data sender thread (it creates its own timing thread internally)
+    data_thread = Thread(target=send_pre_encoded_data_to_unreal,
+                         args=(encoded_facial_data, start_event, 60, socket_connection))
 
     audio_thread.start()
     data_thread.start()
@@ -67,10 +68,11 @@ def run_audio_animation(audio_path, generated_facial_data, py_face, socket_conne
     audio_thread.join()
     data_thread.join()
 
-    # Restart the default animation after playback is complete.
-    stop_default_animation.clear()
+    # After playback, restart the default animation with a fresh socket and thread.
+    stop_default_animation.clear()  # Clear the event for the next default animation cycle.
     default_animation_thread = Thread(target=default_animation_loop, args=(py_face,))
     default_animation_thread.start()
+
 
 def run_audio_animation_from_bytes(audio_bytes, generated_facial_data, py_face, socket_connection, default_animation_thread):
     # --- Pre-encode in its own thread and wait until it's done ---
