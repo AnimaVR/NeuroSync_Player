@@ -24,25 +24,14 @@ def pre_encode_facial_data(facial_data: List[np.ndarray], py_face, fps: int = 60
 
     return encoded_data
 
-
-
 def send_pre_encoded_data_to_unreal(encoded_facial_data: List[bytes], start_event, fps: int, socket_connection=None):
     """
-    This function creates a dedicated sender thread which sends frames at precisely
-    calculated intervals. If the sender is too late for a frame (i.e. due to CPU stutter),
-    it will skip that frame to try and catch up.
-    
-    The basic logic is:
-      - Wait for the start signal.
-      - Calculate the scheduled time for each frame.
-      - Sleep until that time if possible.
-      - If already too late (more than one frame duration behind), skip the frame.
-      - Otherwise, send the frame.
-    
-    The sender thread is created and started inside this function.
+    Creates a dedicated sender thread that sends frames at precisely calculated intervals.
+    It uses a combination of sleep (for low CPU load) and a brief busy-wait for high accuracy.
+    If the sender is too late (more than one frame duration behind), the frame is skipped.
     """
     def sender():
-        # Create a socket if one wasn't provided.
+        # Create a socket if none is provided.
         own_socket = False
         if socket_connection is None:
             sock = create_socket_connection()
@@ -50,7 +39,7 @@ def send_pre_encoded_data_to_unreal(encoded_facial_data: List[bytes], start_even
         else:
             sock = socket_connection
 
-        # Wait for the signal to start sending frames.
+        # Wait for the start signal.
         start_event.wait()
 
         frame_duration = 1.0 / fps  # seconds per frame
@@ -59,24 +48,30 @@ def send_pre_encoded_data_to_unreal(encoded_facial_data: List[bytes], start_even
 
         i = 0
         while i < total_frames:
-            # Calculate the ideal send time for the current frame.
             scheduled_time = start_time + i * frame_duration
             now = time.perf_counter()
+            delta = scheduled_time - now
 
-            # If we are early, sleep until it is time.
-            if now < scheduled_time:
-                time.sleep(scheduled_time - now)
-                now = time.perf_counter()
-
-            # If we're too late for this frame, skip it.
-            # (Here the threshold is one full frame; adjust if you want a more or less aggressive skip.)
-            if now - scheduled_time > frame_duration:
-                # Optionally, log or count skipped frames here.
-                i += 1
-                continue
+            if delta > 0:
+                # Sleep most of the remaining time if it is sufficiently long.
+                if delta > 0.005:  # if more than 5 ms remain
+                    time.sleep(delta - 0.002)  # sleep leaving ~2ms remaining
+                # Busy-wait for the final few milliseconds.
+                while time.perf_counter() < scheduled_time:
+                    pass
+            else:
+                # If we're more than one frame behind, skip this frame.
+                if abs(delta) > frame_duration:
+                    i += 1
+                    continue
 
             try:
-                sock.sendall(encoded_facial_data[i])
+               
+                # Use send() instead of sendall() for UDP datagrams.
+                sent_bytes = sock.send(encoded_facial_data[i])
+                if sent_bytes != len(encoded_facial_data[i]):
+                    print(f"Warning: Incomplete send on frame {i}: sent {sent_bytes} of {len(encoded_facial_data[i])} bytes.")
+      
             except Exception as e:
                 print(f"Error sending frame {i}: {e}")
             i += 1
@@ -84,9 +79,7 @@ def send_pre_encoded_data_to_unreal(encoded_facial_data: List[bytes], start_even
         if own_socket:
             sock.close()
 
-    # Create and start the sender thread.
     sender_thread = Thread(target=sender, name="FrameSenderThread")
-    sender_thread.daemon = True  
+    sender_thread.daemon = True
     sender_thread.start()
-
-    return sender_thread 
+    return sender_thread
