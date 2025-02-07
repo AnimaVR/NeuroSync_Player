@@ -30,45 +30,71 @@ def load_facial_data_from_csv(csv_path):
     return data.values
 
 def run_audio_animation(audio_path, generated_facial_data, py_face, socket_connection, default_animation_thread):
-    # ✅ Pre-encode before stopping default animation
-    encoded_facial_data = pre_encode_facial_data(generated_facial_data, py_face) 
+    # --- Pre-encode in its own thread and wait until it's done ---
+    pre_encode_done = Event()
+    encoded_holder = {} 
 
-    # ✅ Stop the default animation (no lock needed)
-    stop_default_animation.set()
-    if default_animation_thread and default_animation_thread.is_alive():
-        default_animation_thread.join()
+    def pre_encode_worker():
+        # This will take some time – ensure it completes before we move on
+        encoded_holder['data'] = pre_encode_facial_data(generated_facial_data, py_face)
+        pre_encode_done.set()
 
-    start_event = Event()   
+    pre_encode_thread = Thread(target=pre_encode_worker, name="PreEncodeThread")
+    pre_encode_thread.start()
+    pre_encode_done.wait()       # Wait for pre-encoding to finish
+    pre_encode_thread.join()     # Ensure thread cleanup
+    encoded_facial_data = encoded_holder['data']
+    # ----------------------------------------------------------------
 
-    # Start the audio and animation playback
-    audio_thread = Thread(target=play_audio_from_path, args=(audio_path, start_event))
-    data_thread = Thread(target=send_pre_encoded_data_to_unreal, args=(encoded_facial_data, start_event, 60, socket_connection))
-
-    audio_thread.start()
-    data_thread.start()
-    
-    start_event.set()
-    
-    audio_thread.join()
-    data_thread.join()
-
-    # ✅ Restart the default animation (no lock needed)
-    stop_default_animation.clear()
-    default_animation_thread = Thread(target=default_animation_loop, args=(py_face,))
-    default_animation_thread.start()
-
-def run_audio_animation_from_bytes(audio_bytes, generated_facial_data, py_face, socket_connection, default_animation_thread):
-    # ✅ Pre-encode before stopping default animation
-    encoded_facial_data = pre_encode_facial_data(generated_facial_data, py_face)
-
-    # ✅ Stop the default animation (no lock needed)
+    # Stop the default animation before starting playback
     stop_default_animation.set()
     if default_animation_thread and default_animation_thread.is_alive():
         default_animation_thread.join()
 
     start_event = Event()
 
-    # Start the audio and animation playback
+    # Start the audio and animation playback in their own threads.
+    audio_thread = Thread(target=play_audio_from_path, args=(audio_path, start_event))
+    # Use the revised sending function that has its own timing thread internally
+    data_thread = Thread(target=send_pre_encoded_data_to_unreal, args=(encoded_facial_data, start_event, 60, socket_connection))
+
+    audio_thread.start()
+    data_thread.start()
+    
+    # Signal both threads to start simultaneously.
+    start_event.set()
+    
+    audio_thread.join()
+    data_thread.join()
+
+    # Restart the default animation after playback is complete.
+    stop_default_animation.clear()
+    default_animation_thread = Thread(target=default_animation_loop, args=(py_face,))
+    default_animation_thread.start()
+
+def run_audio_animation_from_bytes(audio_bytes, generated_facial_data, py_face, socket_connection, default_animation_thread):
+    # --- Pre-encode in its own thread and wait until it's done ---
+    pre_encode_done = Event()
+    encoded_holder = {}
+
+    def pre_encode_worker():
+        encoded_holder['data'] = pre_encode_facial_data(generated_facial_data, py_face)
+        pre_encode_done.set()
+
+    pre_encode_thread = Thread(target=pre_encode_worker, name="PreEncodeThread")
+    pre_encode_thread.start()
+    pre_encode_done.wait()       # Wait for pre encoding to complete
+    pre_encode_thread.join()     # Clean up the thread
+    encoded_facial_data = encoded_holder['data']
+    # ----------------------------------------------------------------
+
+    # Stop the default animation before starting playback
+    stop_default_animation.set()
+    if default_animation_thread and default_animation_thread.is_alive():
+        default_animation_thread.join()
+
+    start_event = Event()
+
     audio_thread = Thread(target=play_audio_from_memory, args=(audio_bytes, start_event))
     data_thread = Thread(target=send_pre_encoded_data_to_unreal, args=(encoded_facial_data, start_event, 60, socket_connection))
 
@@ -80,7 +106,7 @@ def run_audio_animation_from_bytes(audio_bytes, generated_facial_data, py_face, 
     audio_thread.join()
     data_thread.join()
 
-    # ✅ Restart the default animation (no lock needed)
+    # Restart the default animation after playback is complete.
     stop_default_animation.clear()
     default_animation_thread = Thread(target=default_animation_loop, args=(py_face,))
     default_animation_thread.start()
