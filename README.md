@@ -1,4 +1,4 @@
-# NeuroSync Open Source Audio2Face Player
+# NeuroSync Player
 
 ## NEW : [Train your own model](https://github.com/AnimaVR/NeuroSync_Trainer_Lite)
 
