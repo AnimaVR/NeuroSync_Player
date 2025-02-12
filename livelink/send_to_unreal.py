@@ -24,7 +24,7 @@ def pre_encode_facial_data(facial_data: List[np.ndarray], py_face, fps: int = 60
     # Blend in phase
     blend_in(facial_data, fps, py_face, encoded_data, blend_in_frames)
 
-    # Main animation loop: Replace blink, squint, eye-wide values with default animation
+    # Main animation loop: Replace blink with default animation
     for frame_index, frame_data in enumerate(facial_data[blend_in_frames:-blend_out_frames]):
         # Ensure looping default animation data
         default_loop_index = frame_index % len(default_animation_data)
