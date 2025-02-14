@@ -1,5 +1,6 @@
-# This code is licensed under the Creative Commons Attribution-NonCommercial 4.0 International License.
-# For more details, visit: https://creativecommons.org/licenses/by-nc/4.0/
+# This software is licensed under a **dual-license model**
+# For individuals and businesses earning **under $1M per year**, this software is licensed under the **MIT License**
+# Businesses or organizations with **annual revenue of $1,000,000 or more** must obtain permission to use this software commercially.
 # pylivelinkface.py
 # Hard work here done by https://github.com/JimWest/PyLiveLinkFace | 
 
@@ -75,8 +76,8 @@ class PyLiveLinkFace:
         self._filter_size = filter_size
         self._version = 6
         
-        self._scaling_factor_mouth = 1.0
-        self._scaling_factor_eyes = 0.4
+        self._scaling_factor_mouth = 1.1
+        self._scaling_factor_eyes = 1.0
         self._scaling_factor_eyebrows = 0.4
 
         now = datetime.datetime.now()

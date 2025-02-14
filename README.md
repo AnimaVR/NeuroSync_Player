@@ -1,8 +1,8 @@
 # NeuroSync Player
 
-## Talk to a NeuroSync prototype live on Twitch : [Visit Mai](https://www.twitch.tv/mai_anima_ai)
+## NEW : [Train your own model](https://github.com/AnimaVR/NeuroSync_Trainer_Lite)
 
-![Alt text](/utils/catears2.png)
+## Talk to a NeuroSync prototype live on Twitch : [Visit Mai](https://www.twitch.tv/mai_anima_ai)
 
 ## Overview
 
