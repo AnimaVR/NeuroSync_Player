@@ -6,6 +6,8 @@ Toy demo of how one might talk to an AI using Neurosync with context added for m
 
 Use a local llm or OpenAI api, just set the bool and add your key.
 
+**Demo Build**: [Download the demo build](https://drive.google.com/drive/folders/1q-CYauPqyWfvs8NamW4QuC1H1r02RYMQ?usp=sharing) to test NeuroSync with an Unreal Project (aka, free realistic AI companion when used with llm_to_face.py *wink* )
+
 ## [Train your own model](https://github.com/AnimaVR/NeuroSync_Trainer_Lite)
 
 ## Talk to a NeuroSync prototype live on Twitch : [Visit Mai](https://www.twitch.tv/mai_anima_ai)
