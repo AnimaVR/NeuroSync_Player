@@ -1,6 +1,6 @@
 # NeuroSync Player
 
-## NEW : llm_to_face.py for talking to an AI with Neurosync.
+## NEW : llm_to_face.py 
 
 Toy demo of how one might talk to an AI using Neurosync with context added for multi-turn.
 
