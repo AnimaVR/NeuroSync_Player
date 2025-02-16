@@ -9,7 +9,7 @@ API_KEY = "YOUR-NEUROSYNC-API-KEY"  # Your API key
 REMOTE_URL = "https://api.neurosync.info/audio_to_blendshapes"  # External API URL
 LOCAL_URL = "http://127.0.0.1:5000/audio_to_blendshapes"  # Local URL
 
-def send_audio_to_neurosync(audio_bytes, use_local=False):
+def send_audio_to_neurosync(audio_bytes, use_local=True):
     try:
         # Use the local or remote URL depending on the flag
         url = LOCAL_URL if use_local else REMOTE_URL
