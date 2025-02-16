@@ -69,7 +69,7 @@ def scale_blendshapes_by_section(blendshapes: List[float], mouth_scale: float, e
 
 
 class PyLiveLinkFace:
-    def __init__(self, name: str = "Python_LiveLinkFace", uuid: str = str(uuid.uuid1()), fps=60, filter_size: int = 0) -> None:
+    def __init__(self, name: str = "face1", uuid: str = str(uuid.uuid1()), fps=60, filter_size: int = 0) -> None:
         self.uuid = f"${uuid}" if not uuid.startswith("$") else uuid
         self.name = name
         self.fps = fps
