@@ -107,7 +107,7 @@ def main():
             chat_history.append({"input": user_input, "response": llm_response})
             save_chat_log(chat_history)
             
-            audio_bytes = get_elevenlabs_audio(llm_response, VOICE_NAME)
+            audio_bytes = get_elevenlabs_audio(llm_response, VOICE_NAME) # use a local option for the fastest bestests resultses
             if audio_bytes:
                 generated_facial_data = send_audio_to_neurosync(audio_bytes)
                 if generated_facial_data:
