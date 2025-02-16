@@ -1,6 +1,12 @@
 # NeuroSync Player
 
-## NEW : [Train your own model](https://github.com/AnimaVR/NeuroSync_Trainer_Lite)
+## NEW : llm_to_face.py for talking to an AI with Neurosync.
+
+Toy demo of how one might talk to an AI using Neurosync with context added for multi-turn.
+
+Use a local llm or OpenAI api, just set the bool and add your key.
+
+## [Train your own model](https://github.com/AnimaVR/NeuroSync_Trainer_Lite)
 
 ## Talk to a NeuroSync prototype live on Twitch : [Visit Mai](https://www.twitch.tv/mai_anima_ai)
 
