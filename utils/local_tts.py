@@ -12,7 +12,6 @@ def call_local_tts(text):
     """
     payload = {"text": text}
     try:
-        # Removed API key header
         response = requests.post(LOCAL_TTS_URL, json=payload)
         response.raise_for_status()
         return response.content
