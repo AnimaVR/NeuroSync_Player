@@ -1,4 +1,5 @@
-# main.py
+# llm_to_face.py
+
 import os
 from threading import Thread, Event
 from queue import Queue, Empty
