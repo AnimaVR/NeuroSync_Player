@@ -1,9 +1,8 @@
 # main.py
 import os
-from threading import Thread
-from queue import Queue
+from threading import Thread, Event
+from queue import Queue, Empty
 import pygame
-import openai
 
 from livelink.connect.livelink_init import create_socket_connection, initialize_py_face
 from livelink.animations.default_animation import default_animation_loop, stop_default_animation
@@ -12,8 +11,6 @@ from utils.api_utils import initialize_directories
 from utils.chat_utils import load_chat_history, save_chat_log
 from utils.llm_utils import stream_llm_chunks
 from utils.audio_workers import tts_worker, audio_queue_worker
-from utils.local_tts import call_local_tts 
-from utils.eleven_labs import get_elevenlabs_audio
 
 # Constants
 USE_LOCAL_LLM = True      # Set to False to use OpenAI API
@@ -34,8 +31,19 @@ llm_config = {
     "LLM_STREAM_URL": LLM_STREAM_URL,
     "OPENAI_API_KEY": OPENAI_API_KEY,
     "max_chunk_length": 500,
-    "flush_token_count": 10  # flush after 10 tokens if no punctuation encountered
+    "flush_token_count": 3  # flush after 10 tokens if no punctuation encountered
 }
+
+# Create a function to flush a queue
+def flush_queue(q):
+    try:
+        while True:
+            q.get_nowait()
+    except Empty:
+        pass
+
+# (Optionally) Create a global interrupt event (not used in this example, but available if needed)
+interrupt_event = Event()
 
 def main():
     initialize_directories()
@@ -64,18 +72,35 @@ def main():
         while True:
             user_input = input("Enter text (or 'q' to quit): ").strip()
             if user_input.lower() == 'q':
-                break      
+                break
+
+            # Interrupt current playback:
+            flush_queue(chunk_queue)
+            flush_queue(audio_queue)
+            # Stop any current audio playback. Adjust if you have a custom stop mechanism.
+            if pygame.mixer.get_init():
+                pygame.mixer.stop()
+
+            
+            # Optionally, signal an interrupt event here if your workers check for it.
+            # interrupt_event.set()
+            
             # Stream the LLM response; text chunks are enqueued as they are detected.
             full_response = stream_llm_chunks(user_input, chat_history, chunk_queue, config=llm_config)
+           # print(f"\nLLM Response (final): {full_response}")
             
             chat_history.append({"input": user_input, "response": full_response})
             save_chat_log(chat_history)
+            
+            # (Optional) Clear the interrupt flag after processing new input.
+            # interrupt_event.clear()
     finally:
         # Wait until all text chunks have been processed
         chunk_queue.join()
         # Signal the TTS worker to exit
         chunk_queue.put(None)
         tts_worker_thread.join()
+        
         # Wait until all audio items have been played
         audio_queue.join()
         # Signal the audio worker to exit
