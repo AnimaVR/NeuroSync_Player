@@ -68,10 +68,10 @@ def stream_llm_chunks(user_input, chat_history, chunk_queue, config):
             try:
                 with requests.post(config["LLM_STREAM_URL"], json=payload, stream=True) as response:
                     response.raise_for_status()
-                    print("Assistant Response (streaming): ", end='', flush=True)
+                    print("Assistant Response (streaming): ", end='\n\n', flush=True)
                     for token in response.iter_lines(decode_unicode=True):
                         if token:
-                            print(token, end='', flush=True)
+                            print(token, end='\n\n', flush=True)
                             full_response += token
                             buffer += token
                             token_count += 1
@@ -118,7 +118,7 @@ def stream_llm_chunks(user_input, chat_history, chunk_queue, config):
                 )
                 for chunk in response:
                     token = chunk["choices"][0].get("delta", {}).get("content", "")
-                    print(token, end='', flush=True)
+                    print(token, end='\n\n', flush=True)
                     full_response += token
                     buffer += token
                     token_count += 1
