@@ -64,11 +64,9 @@ def main():
         while True:
             user_input = input("Enter text (or 'q' to quit): ").strip()
             if user_input.lower() == 'q':
-                break
-            
+                break      
             # Stream the LLM response; text chunks are enqueued as they are detected.
             full_response = stream_llm_chunks(user_input, chat_history, chunk_queue, config=llm_config)
-            print(f"\nLLM Response (final): {full_response}")
             
             chat_history.append({"input": user_input, "response": full_response})
             save_chat_log(chat_history)
@@ -78,7 +76,6 @@ def main():
         # Signal the TTS worker to exit
         chunk_queue.put(None)
         tts_worker_thread.join()
-        
         # Wait until all audio items have been played
         audio_queue.join()
         # Signal the audio worker to exit
