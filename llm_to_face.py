@@ -31,7 +31,7 @@ llm_config = {
     "LLM_STREAM_URL": LLM_STREAM_URL,
     "OPENAI_API_KEY": OPENAI_API_KEY,
     "max_chunk_length": 500,
-    "flush_token_count": 3  # flush after 10 tokens if no punctuation encountered
+    "flush_token_count": 6  # flush after 6 tokens if no punctuation encountered
 }
 
 # Create a function to flush a queue
