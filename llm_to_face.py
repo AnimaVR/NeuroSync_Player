@@ -34,7 +34,6 @@ llm_config = {
     "flush_token_count": 6  # flush after 6 tokens if no punctuation encountered
 }
 
-# Create a function to flush a queue
 def flush_queue(q):
     try:
         while True:
