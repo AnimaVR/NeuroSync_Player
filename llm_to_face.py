@@ -79,18 +79,13 @@ def main():
                 pygame.mixer.stop()
 
             
-            # Optionally, signal an interrupt event here if your workers check for it.
-            # interrupt_event.set()
-            
             # Stream the LLM response; text chunks are enqueued as they are detected.
             full_response = stream_llm_chunks(user_input, chat_history, chunk_queue, config=llm_config)
            # print(f"\nLLM Response (final): {full_response}")
             
             chat_history.append({"input": user_input, "response": full_response})
             save_chat_log(chat_history)
-            
-            # (Optional) Clear the interrupt flag after processing new input.
-            # interrupt_event.clear()
+
     finally:
         # Wait until all text chunks have been processed
         chunk_queue.join()
