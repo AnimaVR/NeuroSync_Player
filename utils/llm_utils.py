@@ -3,6 +3,8 @@ import re
 import requests
 import openai
 
+# This is terrible, I know. I am sorry. Better coming soon.
+
 def chunk_text(text, max_chunk_length=500):
     """
     Splits text into chunks based on sentence boundaries and a maximum chunk length.
