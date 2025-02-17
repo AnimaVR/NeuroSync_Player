@@ -33,7 +33,7 @@ llm_config = {
     "LLM_API_URL": LLM_API_URL,
     "LLM_STREAM_URL": LLM_STREAM_URL,
     "OPENAI_API_KEY": OPENAI_API_KEY,
-    "max_chunk_length": 1000,
+    "max_chunk_length": 500,
     "flush_token_count": 10  # flush after 10 tokens if no punctuation encountered
 }
 
