@@ -32,15 +32,6 @@ def stream_llm_chunks(user_input, chat_history, chunk_queue, config):
     exceed the maximum chunk length, or after a given number of tokens have been received.
     Each chunk is put into chunk_queue for TTS processing.
     Returns the full response as a string.
-    
-    config should be a dict containing:
-      - USE_LOCAL_LLM (bool)
-      - USE_STREAMING (bool)
-      - LLM_API_URL (str)
-      - LLM_STREAM_URL (str)
-      - OPENAI_API_KEY (str)
-      - max_chunk_length (int)
-      - flush_token_count (int)  # flush after this many tokens if no punctuation seen
     """
     messages = [{"role": "system", "content": "You are an AI assistant responding concisely."}]
     for entry in chat_history:
@@ -59,10 +50,18 @@ def stream_llm_chunks(user_input, chat_history, chunk_queue, config):
     full_response = ""
     token_count = 0
     max_chunk_length = config.get("max_chunk_length", 500)
-    flush_token_count = config.get("flush_token_count", 10)
+    flush_token_count = config.get("flush_token_count", 10)  # <<-- changed default to 10 tokens
     USE_LOCAL_LLM = config["USE_LOCAL_LLM"]
     USE_STREAMING = config["USE_STREAMING"]
     
+    def flush_buffer():
+        nonlocal buffer, token_count
+        chunk_text_val = buffer.strip()
+        if chunk_text_val:
+            chunk_queue.put(chunk_text_val)
+        buffer = ""
+        token_count = 0
+
     if USE_LOCAL_LLM:
         if USE_STREAMING:
             try:
@@ -75,13 +74,19 @@ def stream_llm_chunks(user_input, chat_history, chunk_queue, config):
                             full_response += token
                             buffer += token
                             token_count += 1
-                            # Flush if token ends with punctuation, buffer is long, or after flush_token_count tokens.
-                            if (token.strip() and token.strip()[-1] in ".!?") or (len(buffer) >= max_chunk_length) or (token_count >= flush_token_count):
-                                chunk_text_val = buffer.strip()
-                                if chunk_text_val:
-                                    chunk_queue.put(chunk_text_val)
-                                buffer = ""
-                                token_count = 0
+                            
+                            # ----- CHANGED LOGIC -----
+                            # Instead of checking if the current token ends with punctuation,
+                            # check if the entire buffer ends with punctuation.
+                            if buffer.strip() and buffer.strip()[-1] in ".!?":
+                                flush_buffer()
+                            # Flush if the buffer is too long
+                            elif len(buffer) >= max_chunk_length:
+                                flush_buffer()
+                            # Flush if we've received a number of tokens without punctuation.
+                            elif token_count >= flush_token_count:
+                                flush_buffer()
+                            # ---------------------------
                     if buffer.strip():
                         chunk_queue.put(buffer.strip())
             except Exception as e:
@@ -122,12 +127,15 @@ def stream_llm_chunks(user_input, chat_history, chunk_queue, config):
                     full_response += token
                     buffer += token
                     token_count += 1
-                    if (token.strip() and token.strip()[-1] in ".!?") or (len(buffer) >= max_chunk_length) or (token_count >= flush_token_count):
-                        chunk_text_val = buffer.strip()
-                        if chunk_text_val:
-                            chunk_queue.put(chunk_text_val)
-                        buffer = ""
-                        token_count = 0
+                    
+                    # ----- CHANGED LOGIC (same as above) -----
+                    if buffer.strip() and buffer.strip()[-1] in ".!?":
+                        flush_buffer()
+                    elif len(buffer) >= max_chunk_length:
+                        flush_buffer()
+                    elif token_count >= flush_token_count:
+                        flush_buffer()
+                    # --------------------------------------------
                 if buffer.strip():
                     chunk_queue.put(buffer.strip())
                 return full_response
