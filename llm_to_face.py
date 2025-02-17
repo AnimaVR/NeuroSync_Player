@@ -21,7 +21,7 @@ VOICE_NAME = 'Lily'
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")  # Set your OpenAI API key in environment variables
 
 # Flag for local audio generation using your Flask TTS endpoint
-USE_LOCAL_AUDIO = True    # Set to True to use local TTS; if False, use ElevenLabs
+USE_LOCAL_AUDIO = True    # Set to True to use local TTS; if False, use ElevenLabs by adding your api to to utils/eleven_labs.py
 
 # LLM configuration dictionary (used by stream_llm_chunks)
 llm_config = {
