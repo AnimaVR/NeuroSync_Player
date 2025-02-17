@@ -1,6 +1,6 @@
 # NeuroSync Player
 
-## NEW : llm_to_face.py 
+## NEW : llm_to_face.py *Streaming + queue added for faster response times as well as local tts option*
 
 Toy demo of how one might talk to an AI using Neurosync with context added for multi-turn.
 
