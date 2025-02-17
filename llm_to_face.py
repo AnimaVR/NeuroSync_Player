@@ -42,9 +42,6 @@ def flush_queue(q):
     except Empty:
         pass
 
-# (Optionally) Create a global interrupt event (not used in this example, but available if needed)
-interrupt_event = Event()
-
 def main():
     initialize_directories()
     py_face = initialize_py_face()
