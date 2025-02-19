@@ -1,0 +1,25 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "neurosync_player"
+version = "0.1.0"
+description = "The NeuroSync Player allows for real-time streaming of facial blendshapes into Unreal Engine 5 using LiveLink - enabling facial animation from audio input."
+readme = "README.md"
+requires-python = "==3.12.*"
+dependencies = [
+    "keyboard>=0.13.5",
+    "librosa>=0.10.1",
+    "pandas>=2.2.3",
+    "pyaudio>=0.2.14",
+    "pygame>=2.6.1",
+    "requests>=2.32.3",
+    "scipy>=1.15.2",
+    "soundfile>=0.13.1",
+    "timecode>=1.4.1",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/wolfi/NeuroSync_Player"
+"Bug Tracker" = "https://github.com/wolfi/NeuroSync_Player/issues"
