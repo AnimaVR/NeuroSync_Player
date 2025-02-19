@@ -10,22 +10,37 @@ from threading import Event
 
 from livelink.connect.livelink_init import FaceBlendShape, UDP_IP, UDP_PORT
 
-ground_truth_path = r"livelink/animations/default_anim/default.csv"
+import os
+from pathlib import Path
+
+mod_path = Path(__file__).parent
+ground_truth_path = os.path.join(mod_path, "default_anim/default.csv")
+
+# ground_truth_path = r"livelink/animations/default_anim/default.csv"
 columns_to_drop = [
-    'TongueOut', 'HeadYaw', 'HeadPitch', 'HeadRoll',
-    'LeftEyeYaw', 'LeftEyePitch', 'LeftEyeRoll',
-    'RightEyeYaw', 'RightEyePitch', 'RightEyeRoll'
+    "TongueOut",
+    "HeadYaw",
+    "HeadPitch",
+    "HeadRoll",
+    "LeftEyeYaw",
+    "LeftEyePitch",
+    "LeftEyeRoll",
+    "RightEyeYaw",
+    "RightEyePitch",
+    "RightEyeRoll",
 ]
+
 
 def load_default_animation(csv_path):
     data = pd.read_csv(csv_path)
-    data = data.drop(columns=['Timecode', 'BlendshapeCount'] + columns_to_drop)
+    data = data.drop(columns=["Timecode", "BlendshapeCount"] + columns_to_drop)
     return data.values
+
 
 default_animation_data = load_default_animation(ground_truth_path)
 
-def blend_animation(data, blend_frames=30):
 
+def blend_animation(data, blend_frames=30):
     last_frames = data[-blend_frames:]
     first_frames = data[:blend_frames]
 
@@ -37,9 +52,11 @@ def blend_animation(data, blend_frames=30):
     blended_data = np.vstack([data[:-blend_frames], blended_frames])
     return blended_data
 
+
 blended_animation_data = blend_animation(default_animation_data, blend_frames=30)
 
 stop_default_animation = Event()
+
 
 def default_animation_loop(py_face):
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
@@ -53,13 +70,13 @@ def default_animation_loop(py_face):
                 # Apply the frame blendshapes
                 for i, value in enumerate(frame):
                     py_face.set_blendshape(FaceBlendShape(i), float(value))
-                
+
                 # Send the frame
                 try:
                     s.sendall(py_face.encode())
                 except Exception as e:
                     print(f"Error in default animation sending: {e}")
-                
+
                 # Instead of one long sleep, break it into short chunks
                 total_sleep = 1 / 60
                 sleep_interval = 0.005  # check every 5ms
