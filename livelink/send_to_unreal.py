@@ -18,9 +18,9 @@ def pre_encode_facial_data(facial_data: List[np.ndarray], py_face, fps: int = 60
 
     # Indices of blendshapes to replace with default animation values
     eye_replacement_indices = [
-        FaceBlendShape.EyeBlinkLeft.value, FaceBlendShape.EyeBlinkRight.value, FaceBlendShape.EyeWideLeft.value, FaceBlendShape.EyeWideRight.value, FaceBlendShape.EyeSquintLeft.value, FaceBlendShape.EyeSquintRight.value
+        FaceBlendShape.EyeBlinkLeft.value, FaceBlendShape.EyeBlinkRight.value, FaceBlendShape.EyeWideLeft.value, FaceBlendShape.EyeWideRight.value
     ]
-
+    # FaceBlendShape.EyeSquintLeft.value, FaceBlendShape.EyeSquintRight.value can also be added here, for reasons
     # Blend in phase
     blend_in(facial_data, fps, py_face, encoded_data, blend_in_frames)
 
