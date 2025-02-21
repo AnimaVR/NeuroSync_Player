@@ -21,6 +21,8 @@ dependencies = [
   "scipy>=1.15.2",
   "soundfile>=0.13.1",
   "timecode>=1.4.1",
+  "openai>=1.63.2",
+  "python-dotenv>=1.0.1",
 ]
 
 [project.urls]
