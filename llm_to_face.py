@@ -1,5 +1,7 @@
 # llm_to_face.py
 
+# This is very much just a toy, a better version is coming.
+
 import os
 from threading import Thread, Event
 from queue import Queue, Empty
