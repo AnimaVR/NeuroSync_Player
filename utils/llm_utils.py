@@ -10,7 +10,7 @@ class SentenceBuilder:
         # Add more as needed
     }
 
-    def __init__(self, chunk_queue, max_chunk_length=500, flush_token_count=10):
+    def __init__(self, chunk_queue, max_chunk_length=500, flush_token_count=50):
         self.chunk_queue = chunk_queue
         self.max_chunk_length = max_chunk_length
         self.flush_token_count = flush_token_count
