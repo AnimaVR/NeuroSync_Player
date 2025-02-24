@@ -1,9 +1,5 @@
-# llm_to_face.py
-
-# This is very much just a toy, a better version is coming.
-
 import os
-from threading import Thread, Event
+from threading import Thread
 from queue import Queue, Empty
 import pygame
 
@@ -12,7 +8,7 @@ from livelink.animations.default_animation import default_animation_loop, stop_d
 
 from utils.api_utils import initialize_directories
 from utils.chat_utils import load_chat_history, save_chat_log
-from utils.llm_utils import stream_llm_chunks
+from utils.llm_utils import stream_llm_chunks  # <-- Using the updated function here
 from utils.audio_workers import tts_worker, audio_queue_worker
 
 # Constants
@@ -24,7 +20,7 @@ VOICE_NAME = 'Lily'
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")  # Set your OpenAI API key in environment variables
 
 # Flag for local audio generation using your Flask TTS endpoint
-USE_LOCAL_AUDIO = True    # Set to True to use local TTS; if False, use ElevenLabs by adding your api to to utils/eleven_labs.py
+USE_LOCAL_AUDIO = True    # Set to True to use local TTS; if False, use ElevenLabs by adding your api to utils/eleven_labs.py
 
 # LLM configuration dictionary (used by stream_llm_chunks)
 llm_config = {
@@ -80,10 +76,8 @@ def main():
             if pygame.mixer.get_init():
                 pygame.mixer.stop()
 
-            
-            # Stream the LLM response; text chunks are enqueued as they are detected.
+            # Stream the LLM response; text chunks are enqueued as they are detected (token-based).
             full_response = stream_llm_chunks(user_input, chat_history, chunk_queue, config=llm_config)
-           # print(f"\nLLM Response (final): {full_response}")
             
             chat_history.append({"input": user_input, "response": full_response})
             save_chat_log(chat_history)

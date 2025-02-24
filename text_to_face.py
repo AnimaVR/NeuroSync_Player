@@ -1,7 +1,3 @@
-# This software is licensed under a **dual-license model**
-# For individuals and businesses earning **under $1M per year**, this software is licensed under the **MIT License**
-# Businesses or organizations with **annual revenue of $1,000,000 or more** must obtain permission to use this software commercially.
-
 from threading import Thread
 import pygame
 
@@ -12,9 +8,10 @@ from livelink.animations.default_animation import default_animation_loop, stop_d
 
 from utils.api_utils import save_generated_data, initialize_directories
 from utils.generated_utils import run_audio_animation_from_bytes
+from utils.local_tts import call_local_tts 
 from utils.neurosync_api_connect import send_audio_to_neurosync
 
-voice_name = 'Chris1'
+voice_name = 'Lily'
 
 if __name__ == "__main__":
     # Initialize directories and other resources
@@ -35,7 +32,7 @@ if __name__ == "__main__":
                 break
             elif text_input:
                 # Get audio bytes from ElevenLabs using the provided text input
-                audio_bytes = get_elevenlabs_audio(text_input, voice_name)
+                audio_bytes = call_local_tts(text_input) # or get_elevenlabs_audio with an input, voice
                 
                 if audio_bytes:
                     # Send the audio bytes to the API and get the blendshapes
