@@ -1,13 +1,16 @@
 from threading import Thread
 import pygame
 
-from utils.eleven_labs import get_elevenlabs_audio
 from livelink.connect.livelink_init import create_socket_connection, initialize_py_face
 from livelink.animations.default_animation import default_animation_loop, stop_default_animation
+
 from utils.api_utils import save_generated_data, initialize_directories
 from utils.generated_utils import run_audio_animation_from_bytes
-from utils.local_tts import call_local_tts
 from utils.neurosync_api_connect import send_audio_to_neurosync
+
+from utils.eleven_labs import get_elevenlabs_audio
+from utils.local_tts import call_local_tts
+
 
 voice_name = 'Lily'
 
