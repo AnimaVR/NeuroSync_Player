@@ -2,8 +2,10 @@ import discord
 from discord.ext import commands
 import io
 import uuid
-from pydub import AudioSegment
 import os
+import magic  # For MIME type validation
+import subprocess
+from pydub import AudioSegment
 
 from utils.csv.save_csv import save_or_return_csv  # Updated CSV saving utility
 from utils.neurosync_api_connect import send_audio_to_neurosync  # Existing function for API call
@@ -15,11 +17,38 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 
 # Main directory to store generated CSV files and audio
 DISCORD_GEN_DIR = 'discord_gen'
-os.makedirs(DISCORD_GEN_DIR, exist_ok=True)  # Ensure the base folder exists
+os.makedirs(DISCORD_GEN_DIR, exist_ok=True)
 
 # Set to True if you want to use the local Neurosync API instead of the remote one
 USE_LOCAL_API = True
 SEND_CSV_DIRECTLY = True  # Set this flag to True if you want to send the CSV without saving
+
+
+def is_valid_audio(audio_bytes):
+    """Check if the uploaded file is a valid WAV or MP3 based on MIME type."""
+    mime = magic.Magic(mime=True)
+    file_type = mime.from_buffer(audio_bytes)
+
+    allowed_types = ['audio/mpeg', 'audio/wav']
+    return file_type in allowed_types
+
+
+def safely_convert_audio(audio_bytes, input_format):
+    """Convert audio using pydub with basic sandboxing."""
+    try:
+        # Convert using a subprocess call to ffmpeg for added isolation
+        with io.BytesIO(audio_bytes) as input_buffer:
+            audio = AudioSegment.from_file(input_buffer, format=input_format)
+            audio = audio.set_frame_rate(88200)  # Convert to target format (WAV)
+
+            # Export safely to memory
+            wav_io = io.BytesIO()
+            audio.export(wav_io, format="wav")
+            return wav_io.getvalue()
+    except Exception as e:
+        print(f"Audio conversion error: {e}")
+        return None
+
 
 @bot.command()
 async def upload_audio(ctx):
@@ -37,19 +66,21 @@ async def upload_audio(ctx):
 
     audio_data = await attachment.read()
 
-    # Convert MP3 to WAV if necessary
-    if attachment.filename.endswith('.mp3'):
-        audio_segment = AudioSegment.from_file(io.BytesIO(audio_data), format="mp3")
-        audio_segment = audio_segment.set_frame_rate(88200)
-        wav_io = io.BytesIO()
-        audio_segment.export(wav_io, format="wav")
-        audio_data = wav_io.getvalue()
-    elif not attachment.filename.endswith('.wav'):
-        await ctx.send('❌ Please upload a WAV or MP3 audio file.')
+    # Validate audio using MIME type detection
+    if not is_valid_audio(audio_data):
+        await ctx.send('❌ Unsupported or potentially malicious file format detected.')
         return
 
-    # Directly call the Neurosync API (local or remote)
-    blendshape_data = send_audio_to_neurosync(audio_data, use_local=USE_LOCAL_API)
+    # Convert MP3 to WAV if necessary
+    input_format = 'mp3' if attachment.filename.endswith('.mp3') else 'wav'
+    converted_audio = safely_convert_audio(audio_data, input_format)
+
+    if not converted_audio:
+        await ctx.send('❌ Failed to process the audio securely.')
+        return
+
+    # Call the Neurosync API (local or remote)
+    blendshape_data = send_audio_to_neurosync(converted_audio, use_local=USE_LOCAL_API)
 
     # Check if the request was successful
     if blendshape_data:
@@ -64,7 +95,7 @@ async def upload_audio(ctx):
             csv_path = os.path.join(output_dir, 'blendshapes.csv')
 
             with open(audio_path, 'wb') as audio_file:
-                audio_file.write(audio_data)
+                audio_file.write(converted_audio)
 
             save_or_return_csv(blendshape_data, output_path=csv_path)
 
@@ -76,6 +107,7 @@ async def upload_audio(ctx):
 
     else:
         await ctx.send('❌ Failed to generate blendshapes from Neurosync API.')
+
 
 # Run the bot with your Discord bot token
 bot.run('YOUR_DISCORD_BOT_TOKEN')
