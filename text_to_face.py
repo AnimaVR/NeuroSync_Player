@@ -28,13 +28,6 @@ if __name__ == "__main__":
 
     try:
         while True:
-            # Option to switch between TTS engines dynamically
-            tts_choice = input("Use ElevenLabs? (y/n, or press Enter to keep current setting): ").strip().lower()
-            if tts_choice == 'y':
-                use_elevenlabs = True
-            elif tts_choice == 'n':
-                use_elevenlabs = False
-
             text_input = input("Enter the text to generate speech (or 'q' to quit): ").strip()
             if text_input.lower() == 'q':
                 break
@@ -58,11 +51,11 @@ if __name__ == "__main__":
                         # Save the generated blendshape data
                         save_generated_data(audio_bytes, generated_facial_data)
                     else:
-                        print("Failed to get blendshapes from the API.")
+                        print("❌ Failed to get blendshapes from the API.")
                 else:
-                    print("Failed to generate audio.")
+                    print("❌ Failed to generate audio.")
             else:
-                print("No text provided.")
+                print("⚠️ No text provided.")
 
     finally:
         # Stop the default animation when quitting
