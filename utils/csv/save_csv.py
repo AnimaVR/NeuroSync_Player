@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import io
 
 def save_generated_data_as_csv(generated, output_path):
     # Base columns (Blendshape data)
