@@ -6,8 +6,8 @@ import uuid
 from pydub import AudioSegment
 import os
 
-from utils.csv.save_csv import save_generated_data_as_csv  
-from utils.neurosync_api_connect import send_audio_to_neurosync  
+from utils.csv.save_csv import save_generated_data_as_csv  # Existing CSV save function
+from utils.neurosync_api_connect import send_audio_to_neurosync  # Existing function for API call
 
 # Initialize Discord bot with appropriate intents
 intents = discord.Intents.default()
@@ -62,7 +62,7 @@ async def upload_audio(ctx):
         csv_path = os.path.join(output_dir, 'blendshapes.csv')
         audio_path = os.path.join(output_dir, 'audio.wav')
 
-        # Save the audio file
+        # Save the audio file locally
         try:
             with open(audio_path, 'wb') as audio_file:
                 audio_file.write(audio_data)
@@ -70,11 +70,8 @@ async def upload_audio(ctx):
             # Save the blendshape data to a CSV file
             save_generated_data_as_csv(blendshape_data, csv_path)
 
-            # Send both files back to Discord
-            await ctx.send("✅ Audio and blendshape data processed successfully!", files=[
-                discord.File(audio_path),
-                discord.File(csv_path)
-            ])
+            # Only send back the blendshapes CSV
+            await ctx.send("✅ Blendshape data processed successfully!", file=discord.File(csv_path))
         except Exception as e:
             await ctx.send(f'❌ Failed to save audio or blendshape data: {e}')
     else:
