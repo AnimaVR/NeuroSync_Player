@@ -36,7 +36,7 @@ if __name__ == "__main__":
                     break
                 elif keyboard.is_pressed('right ctrl'):
                     # Record the audio until the 'Right Ctrl' key is released
-                    audio_bytes = record_audio_until_release(sr='88200')
+                    audio_bytes = record_audio_until_release()
                     
                     # Send the recorded audio to the API and get the blendshapes
                     generated_facial_data = send_audio_to_neurosync(audio_bytes)
