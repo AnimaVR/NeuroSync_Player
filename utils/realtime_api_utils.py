@@ -81,7 +81,7 @@ async def persistent_realtime_handler(audio_input_queue, conversion_queue, realt
                             print()
                     print("Finished processing one conversation item.")
         except TimeoutError as te:
-            print("Connection timed out during handshake, retrying in 5 seconds...", te)
+            print("Connection timed out during handshake, retrying in 5 seconds...\nFor some reason the first time we connect, this happens every time - don't worry about it, if you have an api key added it should start in a sec..... ", te)
             await asyncio.sleep(5)
         except Exception as e:
             print("Error in persistent realtime handler:", e)
