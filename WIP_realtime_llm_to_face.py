@@ -6,16 +6,39 @@ import pygame
 import keyboard
 import time
 
-from utils.realtime_api_utils import flush_queue, conversion_worker, run_async_realtime
-
 from livelink.connect.livelink_init import create_socket_connection, initialize_py_face
 from livelink.animations.default_animation import default_animation_loop, stop_default_animation
 
-
 from utils.audio_workers import audio_face_queue_worker_realtime
 from utils.audio.record_audio import record_audio_until_release
+from utils.neurosync_api_connect import send_audio_to_neurosync  
+from utils.audio.convert_audio import bytes_to_wav
+from utils.realtime_api_utils import flush_queue, run_async_realtime
+
 
 OPENAI_API_KEY = "YOUR_API_KEY"
+
+# Global configuration for real-time processing
+realtime_config = {
+    "min_buffer_duration": 2.5, 
+    "sample_rate": 22050, 
+    "channels": 1, 
+    "sample_width": 2
+}
+
+
+def conversion_worker(conversion_queue, audio_queue, sample_rate, channels, sample_width):
+    while True:
+        audio_chunk = conversion_queue.get()
+        if audio_chunk is None:  
+            conversion_queue.task_done()
+            break
+
+        wav_audio = bytes_to_wav(audio_chunk, sample_rate, channels, sample_width)
+        facial_data = send_audio_to_neurosync(wav_audio.getvalue())
+
+        audio_queue.put((audio_chunk, facial_data))
+        conversion_queue.task_done()
 
 def main():
     py_face = initialize_py_face()
@@ -27,17 +50,27 @@ def main():
     audio_face_queue = Queue()
     conversion_queue = Queue()
 
-    conversion_worker_thread = threading.Thread(target=conversion_worker,args=(conversion_queue,audio_face_queue,22050,1,2), daemon=True)
+    conversion_worker_thread = threading.Thread(
+        target=conversion_worker,
+        args=(conversion_queue, audio_face_queue, realtime_config["sample_rate"], realtime_config["channels"], realtime_config["sample_width"]),
+        daemon=True
+    )
 
     conversion_worker_thread.start()
-    audio_worker_thread = threading.Thread(target=audio_face_queue_worker_realtime,args=(audio_face_queue, py_face, socket_connection, default_animation_thread))
-    audio_worker_thread.start()
     
-    realtime_config = {"min_buffer_duration": 3, "sample_rate": 22050, "channels": 1, "sample_width": 2 }
+    audio_worker_thread = threading.Thread(
+        target=audio_face_queue_worker_realtime,
+        args=(audio_face_queue, py_face, socket_connection, default_animation_thread)
+    )
+    audio_worker_thread.start()
     
     audio_input_queue = Queue()
 
-    realtime_thread = threading.Thread(target=run_async_realtime,args=(audio_input_queue, conversion_queue, realtime_config, OPENAI_API_KEY), daemon=True)
+    realtime_thread = threading.Thread(
+        target=run_async_realtime,
+        args=(audio_input_queue, conversion_queue, realtime_config, OPENAI_API_KEY),
+        daemon=True
+    )
 
     realtime_thread.start()
     
@@ -59,11 +92,11 @@ def main():
                     break
             
             if keyboard.is_pressed('q'):
-                    break
+                break
                 
             flush_queue(audio_face_queue)
             if pygame.mixer.get_init():
-                    pygame.mixer.stop()
+                pygame.mixer.stop()
 
             audio_input_queue.put(audio_input)
             print("Audio input sent to processing queue.")       
