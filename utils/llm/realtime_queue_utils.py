@@ -1,10 +1,9 @@
 import time
-from utils.generated_runners import play_audio_and_animation
 from threading import Thread, Lock
-from livelink.animations.default_animation import default_animation_loop, stop_default_animation
-from utils.generated_runners import play_audio_and_animation
-from livelink.send_to_unreal import pre_encode_facial_data_blend_in, pre_encode_facial_data_blend_out, pre_encode_facial_data
 
+from livelink.animations.default_animation import default_animation_loop, stop_default_animation
+from livelink.send_to_unreal import pre_encode_facial_data_blend_in, pre_encode_facial_data_blend_out, pre_encode_facial_data
+from utils.generated_runners import play_audio_and_animation
 
 queue_lock = Lock()
 
