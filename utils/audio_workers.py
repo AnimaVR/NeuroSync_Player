@@ -1,6 +1,5 @@
 # utils/audio_workers.py
 
-
 import time
 from threading import Thread, Event, Lock
 from queue import Queue, Empty
@@ -12,8 +11,6 @@ from utils.eleven_labs import get_elevenlabs_audio
 from utils.audio.play_audio import play_audio_from_memory
 from livelink.send_to_unreal import pre_encode_facial_data_blend_in, send_pre_encoded_data_to_unreal, pre_encode_facial_data_without_blend, pre_encode_facial_data_blend_out, pre_encode_facial_data
 from livelink.animations.default_animation import default_animation_loop, stop_default_animation
-
-
 
 # Global lock for shared data protection
 queue_lock = Lock()
@@ -31,14 +28,23 @@ def log_timing_worker(log_queue):
         except Exception as e:
             print(f"Logging error: {e}")
 
-def accumulate_data(audio_bytes, facial_data, accumulated_audio, accumulated_facial_data, encoded_facial_data, py_face):
+# Modified accumulate_data to accept a "single_entry" flag.
+def accumulate_data(audio_bytes, facial_data, accumulated_audio, accumulated_facial_data, encoded_facial_data, py_face, single_entry=False):
     """
     Accumulates incoming audio and facial data while pre-encoding facial animation.
+    
+    If single_entry is True (i.e. only one entry is present),
+    then we call pre_encode_facial_data (which blends in and out).
+    Otherwise, the first entry uses pre_encode_facial_data_blend_in and subsequent entries use pre_encode_facial_data_blend_out.
     """
     with queue_lock:
         accumulated_audio.extend(audio_bytes)
         if len(accumulated_facial_data) == 0:
-            encoded_facial_data.extend(pre_encode_facial_data_blend_in(facial_data, py_face))
+            if single_entry:
+                # Changed: For a single entry, pre-encode with both blend in and out.
+                encoded_facial_data.extend(pre_encode_facial_data(facial_data, py_face))
+            else:
+                encoded_facial_data.extend(pre_encode_facial_data_blend_in(facial_data, py_face))
         else:
             encoded_facial_data.extend(pre_encode_facial_data_blend_out(facial_data, py_face))
         accumulated_facial_data.extend(facial_data)
@@ -76,7 +82,7 @@ def playback_loop(stop_worker, start_event, accumulated_audio, encoded_facial_da
     while not stop_worker.is_set():
         with queue_lock:
             if not accumulated_audio or not encoded_facial_data:
-                time.sleep(0.005)
+                time.sleep(0.01)
                 continue
 
             playback_audio = accumulated_audio[:]
@@ -96,7 +102,7 @@ def playback_loop(stop_worker, start_event, accumulated_audio, encoded_facial_da
         playback_end_time = time.time()
         log_queue.put(f"Playback duration: {playback_end_time - playback_start_time:.3f} seconds.")
 
-        time.sleep(0.005)
+        time.sleep(0.01)
 
         check_and_restart_default_animation(accumulated_audio, encoded_facial_data, audio_face_queue, py_face)
 
@@ -132,6 +138,7 @@ def audio_face_queue_worker_realtime(audio_face_queue, py_face, socket_connectio
     )
     playback_thread.start()
 
+    # Process each item in the queue.
     while True:
         item = audio_face_queue.get()
         if item is None:
@@ -143,12 +150,14 @@ def audio_face_queue_worker_realtime(audio_face_queue, py_face, socket_connectio
         audio_bytes, facial_data = item
         audio_face_queue.task_done()
 
-        accumulate_data(audio_bytes, facial_data, accumulated_audio, accumulated_facial_data, encoded_facial_data, py_face)
+        # Changed: Determine if this is the only entry by checking if the queue is empty.
+        single_entry = audio_face_queue.empty()
+        accumulate_data(audio_bytes, facial_data, accumulated_audio, accumulated_facial_data, encoded_facial_data, py_face, single_entry)
 
         playback_start_time = time.time()
         log_queue.put(f"Time from queue reception to addition to encoded queue: {playback_start_time - received_time:.3f} seconds.")
     
-    time.sleep(0.05)
+    time.sleep(0.1)
     audio_face_queue.join()
 
     stop_worker.set()
@@ -157,12 +166,11 @@ def audio_face_queue_worker_realtime(audio_face_queue, py_face, socket_connectio
     log_queue.put(None)  # Signal log thread to exit
     log_thread.join()
 
-    time.sleep(0.05)
+    time.sleep(0.01)
     with queue_lock:
         stop_default_animation.clear()
         new_default_thread = Thread(target=default_animation_loop, args=(py_face,))
         new_default_thread.start()
-
 
 def audio_face_queue_worker(audio_face_queue, py_face, socket_connection, default_animation_thread):
     """
