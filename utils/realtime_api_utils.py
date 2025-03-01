@@ -2,7 +2,6 @@
 
 import asyncio
 import base64
-from queue import Empty
 from openai import AsyncOpenAI
 
 # -------------------------------
@@ -21,15 +20,6 @@ def compute_min_buffer_size(realtime_config):
     # Compute and return the minimum buffer size needed
     return int(min_buffer_duration * sample_rate * channels * sample_width)
 
-def flush_queue(q):
-    """
-    Utility function to flush (empty) a queue.
-    """
-    try:
-        while True:
-            q.get_nowait()
-    except Empty:
-        pass
 
 # -------------------------------
 # Connection and Session Methods
