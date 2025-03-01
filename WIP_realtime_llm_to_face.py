@@ -4,6 +4,7 @@ import threading
 from queue import Queue
 import pygame
 import keyboard
+import time
 
 from utils.realtime_api_utils import flush_queue, conversion_worker, run_async_realtime
 
@@ -14,7 +15,7 @@ from livelink.animations.default_animation import default_animation_loop, stop_d
 from utils.audio_workers import audio_face_queue_worker_realtime
 from utils.audio.record_audio import record_audio_until_release
 
-OPENAI_API_KEY = "YOUR-OPENAI-API-KEY" 
+OPENAI_API_KEY = "YOUR_API_KEY"
 
 def main():
     py_face = initialize_py_face()
@@ -32,7 +33,7 @@ def main():
     audio_worker_thread = threading.Thread(target=audio_face_queue_worker_realtime,args=(audio_face_queue, py_face, socket_connection, default_animation_thread))
     audio_worker_thread.start()
     
-    realtime_config = {"min_buffer_duration": 4, "sample_rate": 22050, "channels": 1, "sample_width": 2 } # min buffer duration is dependant on the latency of your network, too low and we get skips or missing parts, too high and it takes too long to respond the first time <5 is best.
+    realtime_config = {"min_buffer_duration": 5, "sample_rate": 22050, "channels": 1, "sample_width": 2 }
     
     audio_input_queue = Queue()
 
@@ -42,23 +43,31 @@ def main():
     
     try:
         while True:
-            print("Wait for connection to the realtime API, once connected, press Right Ctrl to record your message (or 'q' to quit): ")
+            print("Wait for connection to the realtime API, then press Right Ctrl to record (or 'q' to quit): ")
+
             while True:
                 if keyboard.is_pressed('q'):
                     break
                 elif keyboard.is_pressed('right ctrl'):
+                    start_record_time = time.time()  # Start timing from audio input
+                    print(f"Recording started.")
                     
                     audio_input = record_audio_until_release()
+                    end_record_time = time.time()
+                    print(f"Recording ended. Duration: {end_record_time - start_record_time:.3f} seconds.")
+
                     break
             
             if keyboard.is_pressed('q'):
-                break
+                    break
+                
             flush_queue(audio_face_queue)
             if pygame.mixer.get_init():
-                pygame.mixer.stop()
+                    pygame.mixer.stop()
 
             audio_input_queue.put(audio_input)
-    
+            print("Audio input sent to processing queue.")       
+       
     finally:
         audio_input_queue.put(None)  
         realtime_thread.join()
