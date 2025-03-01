@@ -2,7 +2,7 @@
 
 ### **01/03/2025 WIP OpenAI realtime API integration**
 
-edit : realtime api expensive... dev on this isnt going to be extensive - i'll just stick to ma local token streamer xd
+edit : realtime api expensive... dev on this isnt going to be extensive - i'll just stick to ma local token streamer + tts xd
 
 *Work in progress* so dont expect it to be perfect, but we are exploring how to stream the realtime api with the face data - it works, with some caveats : 
 
