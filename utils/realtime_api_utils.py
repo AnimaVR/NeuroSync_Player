@@ -19,7 +19,7 @@ async def persistent_realtime_handler(audio_input_queue, conversion_queue, realt
             async with client.beta.realtime.connect(model="gpt-4o-realtime-preview-2024-12-17") as connection:
                 await connection.session.update(session={'modalities': ['audio', 'text']})
                
-                print("Persistent realtime connection established.")
+                print("Persistent realtime connection established. (See ;))")
                 
                 sample_rate = realtime_config.get("sample_rate", 22050)
                 channels = realtime_config.get("channels", 1)
