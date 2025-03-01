@@ -1,5 +1,18 @@
 # NeuroSync Player
 
+### **01/03/2025 WIP OpenAI realtime API integration**
+
+*Work in progress* so dont expect it to be perfect, but we are exploring how to stream the realtime api with the face data - it works, with some caveats : 
+
+- its push to talk, holf right ctrl to speak then release
+- Boundries can have occasional skips, needs some blending work
+- No long term memory
+- Set voice
+
+Generally, i prefer the chunk at the sentence option while using a normal, cheaper, local LLM - but people keep asking for this, so here is the start, to get you started. ;)
+
+FYI : Realtime is very much reliant on short inputs to get short answers with very little context - outside of this, chunking at the sentence from a normal LLM is still faster to respond with animation than the realtime api. Have a play though, its down to your use case.
+
 ### **21/02/2025 Scaling UP! | New 228m parameter model + config added**
 
 A milestone has been hit and previous research has got us to a point where scaling the model up is now possible with much faster training and better quality overall.
