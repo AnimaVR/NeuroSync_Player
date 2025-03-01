@@ -4,11 +4,10 @@
 
 from threading import Thread, Event, Lock
 
-from utils.audio.play_audio import play_audio_from_path, play_audio_from_memory
+from utils.audio.play_audio import play_audio_from_path, play_audio_from_memory, play_audio_bytes
 from livelink.send_to_unreal import pre_encode_facial_data, send_pre_encoded_data_to_unreal
 from livelink.animations.default_animation import default_animation_loop, stop_default_animation
-from livelink.connect.livelink_init import initialize_py_face 
-from utils.audio.play_audio import play_audio_bytes
+from livelink.connect.livelink_init import initialize_py_face
 
 queue_lock = Lock()
 
