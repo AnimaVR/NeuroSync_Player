@@ -1,26 +1,25 @@
-# realtime_llm_to_face.py
-
 import threading
 from queue import Queue
 import pygame
 import keyboard
 import time
 from queue import Empty
+
 from livelink.connect.livelink_init import create_socket_connection, initialize_py_face
 from livelink.animations.default_animation import default_animation_loop, stop_default_animation
 
-from utils.audio_workers import audio_face_queue_worker_realtime
+from utils.audio_face_workers import audio_face_queue_worker_realtime
 from utils.audio.record_audio import record_audio_until_release
-from utils.neurosync_api_connect import send_audio_to_neurosync  
+from utils.neurosync.neurosync_api_connect import send_audio_to_neurosync  
 from utils.audio.convert_audio import bytes_to_wav
-from utils.realtime_api_utils import run_async_realtime
+from utils.llm.realtime_api_utils import run_async_realtime
 
 
-OPENAI_API_KEY = "YOUR_API_KEY"
+OPENAI_API_KEY = "YOUR-OPENAI-API-KEY"
 
 # Global configuration for real-time processing
 realtime_config = {
-    "min_buffer_duration": 6, # this is how much time in bytes, not how much time to wait before response - lower = faster but worse skips, depends a lot on your network/hardware.
+    "min_buffer_duration": 6, 
     "sample_rate": 22050, 
     "channels": 1, 
     "sample_width": 2
