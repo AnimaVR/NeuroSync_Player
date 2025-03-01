@@ -4,7 +4,7 @@
 
 *Work in progress* so dont expect it to be perfect, but we are exploring how to stream the realtime api with the face data - it works, with some caveats : 
 
-- its push to talk, holf right ctrl to speak then release
+- its push to talk, hold right ctrl to speak then release
 - Boundries can have occasional skips, needs some blending work
 - No long term memory
 - Set voice
