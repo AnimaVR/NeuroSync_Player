@@ -16,6 +16,25 @@ def initialize_directories():
         os.makedirs(GENERATED_DIR)
 
 
+def ensure_wav_input_folder_exists(folder_path):
+    """
+    Checks if the wav_input folder exists. If not, creates it.
+    """
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+        print(f"Created folder: {folder_path}")
+
+
+def list_wav_files(folder_path):
+    """
+    Lists all .wav files in the provided folder and returns them as a list.
+    """
+    files = [f for f in os.listdir(folder_path) if f.lower().endswith('.wav')]
+    if not files:
+        print("No .wav files found in the wav_input folder.")
+    return files
+
+
 def list_generated_files():
     """List all the generated audio and face blend shape CSV files in the generated directory."""
     directories = [d for d in os.listdir(GENERATED_DIR) if os.path.isdir(os.path.join(GENERATED_DIR, d))]
