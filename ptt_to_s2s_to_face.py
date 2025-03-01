@@ -1,5 +1,4 @@
 import pygame
-import pyaudio
 import keyboard
 
 from threading import Thread
@@ -7,14 +6,14 @@ from threading import Thread
 from livelink.connect.livelink_init import create_socket_connection, initialize_py_face
 from livelink.animations.default_animation import default_animation_loop, stop_default_animation
 
-from utils.eleven_labs import get_speech_to_speech_audio
+from utils.tts.eleven_labs import get_speech_to_speech_audio
 from utils.audio.record_audio import record_audio_until_release
-from utils.generated_utils import run_audio_animation_from_bytes
-from utils.api_utils import save_generated_data, initialize_directories
-from utils.neurosync_api_connect import send_audio_to_neurosync
+from utils.generated_runners import run_audio_animation_from_bytes
+from utils.files.file_utils import save_generated_data, initialize_directories
+from utils.neurosync.neurosync_api_connect import send_audio_to_neurosync
 
 
-voice_name = 'Chris1'
+voice_name = 'Chris'
 
 if __name__ == "__main__":
 
@@ -37,7 +36,7 @@ if __name__ == "__main__":
                     break
                 elif keyboard.is_pressed('right ctrl'):
                     # Record audio when Right Ctrl is pressed
-                    audio_bytes = record_audio_until_release(sr='88200')
+                    audio_bytes = record_audio_until_release()
 
                     # Convert the recorded audio to speech using Speech-to-Speech API
                     processed_audio_bytes = get_speech_to_speech_audio(audio_bytes, voice_name)
