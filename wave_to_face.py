@@ -8,9 +8,9 @@ from threading import Thread
 from livelink.connect.livelink_init import create_socket_connection, initialize_py_face
 from livelink.animations.default_animation import default_animation_loop, stop_default_animation
 
-from utils.neurosync_api_connect import send_audio_to_neurosync, read_audio_file_as_bytes
-from utils.api_utils import save_generated_data_from_wav, initialize_directories
-from utils.generated_utils import run_audio_animation
+from utils.neurosync.neurosync_api_connect import send_audio_to_neurosync, read_audio_file_as_bytes
+from utils.files.file_utils import save_generated_data_from_wav, initialize_directories
+from utils.generated_runners import run_audio_animation
 
 
 def ensure_wav_input_folder_exists(folder_path):
