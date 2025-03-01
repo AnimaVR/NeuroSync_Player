@@ -32,7 +32,7 @@ def main():
     audio_worker_thread = threading.Thread(target=audio_face_queue_worker_realtime,args=(audio_face_queue, py_face, socket_connection, default_animation_thread))
     audio_worker_thread.start()
     
-    realtime_config = {"min_buffer_duration": 3, "sample_rate": 22050, "channels": 1, "sample_width": 2 }
+    realtime_config = {"min_buffer_duration": 4, "sample_rate": 22050, "channels": 1, "sample_width": 2 } # min buffer duration is dependant on the latency of your network, too low and we get skips or missing parts, too high and it takes too long to respond the first time <5 is best.
     
     audio_input_queue = Queue()
 
