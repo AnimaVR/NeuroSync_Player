@@ -59,3 +59,17 @@ def load_audio_file_from_memory(audio_bytes, sr=88200):
     y = loudness_normalization(y)
     
     return y, sr
+
+def read_audio_file_as_bytes(file_path):
+    if not file_path.lower().endswith('.wav'):
+        print(f"Unsupported file format: {file_path}. Only WAV files are supported.")
+        return None
+    try:
+        with open(file_path, 'rb') as audio_file:
+            return audio_file.read() 
+    except FileNotFoundError:
+        print(f"File not found: {file_path}")
+        return None
+    except Exception as e:
+        print(f"Error reading audio file: {e}")
+        return None
