@@ -5,7 +5,7 @@ from queue import Queue
 import pygame
 import keyboard
 import time
-
+from queue import Empty
 from livelink.connect.livelink_init import create_socket_connection, initialize_py_face
 from livelink.animations.default_animation import default_animation_loop, stop_default_animation
 
@@ -13,7 +13,7 @@ from utils.audio_workers import audio_face_queue_worker_realtime
 from utils.audio.record_audio import record_audio_until_release
 from utils.neurosync_api_connect import send_audio_to_neurosync  
 from utils.audio.convert_audio import bytes_to_wav
-from utils.realtime_api_utils import flush_queue, run_async_realtime
+from utils.realtime_api_utils import run_async_realtime
 
 
 OPENAI_API_KEY = "YOUR_API_KEY"
@@ -26,6 +26,15 @@ realtime_config = {
     "sample_width": 2
 }
 
+def flush_queue(q):
+    """
+    Utility function to flush (empty) a queue.
+    """
+    try:
+        while True:
+            q.get_nowait()
+    except Empty:
+        pass
 
 def conversion_worker(conversion_queue, audio_queue, sample_rate, channels, sample_width):
     while True:
