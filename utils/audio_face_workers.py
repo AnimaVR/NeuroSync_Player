@@ -1,5 +1,6 @@
 # utils/audio_workers.py
 
+import os
 import time
 from threading import Thread, Event, Lock
 from queue import Queue
@@ -7,6 +8,10 @@ from queue import Queue
 from utils.generated_runners import run_audio_animation_from_bytes
 from livelink.animations.default_animation import default_animation_loop, stop_default_animation
 from utils.llm.realtime_queue_utils import playback_loop, accumulate_data
+from utils.files.file_utils import save_generated_data_from_wav
+from utils.neurosync.neurosync_api_connect import send_audio_to_neurosync, read_audio_file_as_bytes
+from utils.generated_runners import run_audio_animation
+
 
 queue_lock = Lock()
 
@@ -89,6 +94,38 @@ def audio_face_queue_worker(audio_face_queue, py_face, socket_connection, defaul
         audio_bytes, facial_data = item
         run_audio_animation_from_bytes(audio_bytes, facial_data, py_face, socket_connection, default_animation_thread)
         audio_face_queue.task_done()
+
+
+def process_wav_file(wav_file, py_face, socket_connection, default_animation_thread):
+    """
+    Processes the wav file by sending it to the API and running the animation.
+    """
+    # Check if the file exists
+    if not os.path.exists(wav_file):
+        print(f"File {wav_file} does not exist.")
+        return
+
+    # Read the wav file as bytes
+    audio_bytes = read_audio_file_as_bytes(wav_file)
+
+    if audio_bytes is None:
+        print(f"Failed to read {wav_file}")
+        return
+
+    # Send the audio bytes to the API and get the blendshapes
+    blendshapes = send_audio_to_neurosync(audio_bytes)
+
+    if blendshapes is None:
+        print("Failed to get blendshapes from the API.")
+        return
+
+    # Run the animation using the blendshapes data
+    run_audio_animation(wav_file, blendshapes, py_face, socket_connection, default_animation_thread)
+
+    # Save the generated blendshape data
+    save_generated_data_from_wav(wav_file, blendshapes)
+
+
 
 def log_timing_worker(log_queue):
     """
