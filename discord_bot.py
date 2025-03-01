@@ -8,7 +8,7 @@ import subprocess
 from pydub import AudioSegment
 
 from utils.csv.save_csv import save_or_return_csv  # Updated CSV saving utility
-from utils.neurosync_api_connect import send_audio_to_neurosync  # Existing function for API call
+from utils.neurosync.neurosync_api_connect import send_audio_to_neurosync  # Existing function for API call
 
 # Initialize Discord bot with appropriate intents
 intents = discord.Intents.default()
