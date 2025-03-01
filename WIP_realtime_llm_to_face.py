@@ -20,7 +20,7 @@ OPENAI_API_KEY = "YOUR_API_KEY"
 
 # Global configuration for real-time processing
 realtime_config = {
-    "min_buffer_duration": 2.5, 
+    "min_buffer_duration": 2.5, # this is how much time in bytes, not how much time to wait before response - lower = faster but worse skips, depends a lot on your network/hardware.
     "sample_rate": 22050, 
     "channels": 1, 
     "sample_width": 2
