@@ -7,59 +7,8 @@ from threading import Thread
 
 from livelink.connect.livelink_init import create_socket_connection, initialize_py_face
 from livelink.animations.default_animation import default_animation_loop, stop_default_animation
-
-from utils.neurosync.neurosync_api_connect import send_audio_to_neurosync, read_audio_file_as_bytes
-from utils.files.file_utils import save_generated_data_from_wav, initialize_directories
-from utils.generated_runners import run_audio_animation
-
-
-def ensure_wav_input_folder_exists(folder_path):
-    """
-    Checks if the wav_input folder exists. If not, creates it.
-    """
-    if not os.path.exists(folder_path):
-        os.makedirs(folder_path)
-        print(f"Created folder: {folder_path}")
-
-
-def list_wav_files(folder_path):
-    """
-    Lists all .wav files in the provided folder and returns them as a list.
-    """
-    files = [f for f in os.listdir(folder_path) if f.lower().endswith('.wav')]
-    if not files:
-        print("No .wav files found in the wav_input folder.")
-    return files
-
-
-def process_wav_file(wav_file, py_face, socket_connection, default_animation_thread):
-    """
-    Processes the wav file by sending it to the API and running the animation.
-    """
-    # Check if the file exists
-    if not os.path.exists(wav_file):
-        print(f"File {wav_file} does not exist.")
-        return
-
-    # Read the wav file as bytes
-    audio_bytes = read_audio_file_as_bytes(wav_file)
-
-    if audio_bytes is None:
-        print(f"Failed to read {wav_file}")
-        return
-
-    # Send the audio bytes to the API and get the blendshapes
-    blendshapes = send_audio_to_neurosync(audio_bytes)
-
-    if blendshapes is None:
-        print("Failed to get blendshapes from the API.")
-        return
-
-    # Run the animation using the blendshapes data
-    run_audio_animation(wav_file, blendshapes, py_face, socket_connection, default_animation_thread)
-
-    # Save the generated blendshape data
-    save_generated_data_from_wav(wav_file, blendshapes)
+from utils.audio_face_workers import process_wav_file
+from utils.files.file_utils import  initialize_directories, ensure_wav_input_folder_exists, list_wav_files
 
 
 if __name__ == "__main__":
