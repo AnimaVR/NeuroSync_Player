@@ -1,9 +1,8 @@
+from queue import Queue, Empty
 import threading
-from queue import Queue
-import pygame
 import keyboard
+import pygame
 import time
-from queue import Empty
 
 from livelink.connect.livelink_init import create_socket_connection, initialize_py_face
 from livelink.animations.default_animation import default_animation_loop, stop_default_animation
