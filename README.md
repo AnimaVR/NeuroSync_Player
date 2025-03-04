@@ -4,6 +4,7 @@
 
 *Work in progress* so dont expect it to be perfect, but we are exploring how to stream the realtime api with the face data - it works, with some caveats : 
 
+- It's expensive, first and foremost. Actually waaaay too expensive to use daily. (local realtime api demo inc ;) )
 - its push to talk, hold right ctrl to speak then release
 - Boundries can have occasional skips, needs some blending work
 - No long term memory
