@@ -14,7 +14,7 @@ from utils.neurosync.neurosync_api_connect import send_audio_to_neurosync
 
 GENERATED_DIR = 'generated'
 
-def process_audio_files():
+def reprocess_generated_files():
     """
     Processes the audio files in the 'generated' directory by sending them to the API and regenerating the facial blendshapes.
     """
