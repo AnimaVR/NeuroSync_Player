@@ -75,7 +75,7 @@ def main():
                 elif keyboard.is_pressed('right ctrl'):
                     start_record_time = time.time()  # Start timing from audio input
                     print(f"Recording started.")
-                    audio_input = record_audio_until_release()
+                    audio_input = record_audio_until_release(sr=22050)
                     end_record_time = time.time()
                     print(f"Recording ended. Duration: {end_record_time - start_record_time:.3f} seconds.")
                     break
