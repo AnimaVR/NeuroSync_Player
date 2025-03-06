@@ -25,7 +25,7 @@ def run_encoded_audio_animation(audio_bytes, encoded_facial_data, socket_connect
     data_thread.join()
 
 
-def play_audio_and_animation(playback_audio, playback_facial_data, start_event, socket_connection):
+def play_audio_and_animation_openai_realtime(playback_audio, playback_facial_data, start_event, socket_connection):
     """
     Plays audio and sends animation data using separate threads.
     """
