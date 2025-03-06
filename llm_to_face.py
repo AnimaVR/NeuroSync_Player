@@ -1,7 +1,6 @@
 # This software is licensed under a **dual-license model**
 # For individuals and businesses earning **under $1M per year**, this software is licensed under the **MIT License**
 # Businesses or organizations with **annual revenue of $1,000,000 or more** must obtain permission to use this software commercially.
-
 import os
 from threading import Thread
 from queue import Queue, Empty
@@ -12,8 +11,8 @@ warnings.filterwarnings(
     message="Couldn't find ffmpeg or avconv - defaulting to ffmpeg, but may not work"
 )
 
-import keyboard  
-import time        
+import keyboard  # For key detection
+import time      # For sleep in push-to-talk loop
 
 from livelink.connect.livelink_init import create_socket_connection, initialize_py_face
 from livelink.animations.default_animation import default_animation_loop, stop_default_animation
@@ -52,13 +51,17 @@ def flush_queue(q):
         pass
 
 def main():
+    # Initialize directories and connections
     initialize_directories()
     py_face = initialize_py_face()
     socket_connection = create_socket_connection()
     chat_history = load_chat_history()
     
+    # Start default face animation
     default_animation_thread = Thread(target=default_animation_loop, args=(py_face,))
     default_animation_thread.start()
+    
+    # Create queues for TTS and audio
     chunk_queue = Queue()
     audio_queue = Queue()
     tts_worker_thread = Thread(target=tts_worker, args=(chunk_queue, audio_queue, USE_LOCAL_AUDIO, VOICE_NAME))
@@ -66,22 +69,25 @@ def main():
     audio_worker_thread = Thread(target=audio_face_queue_worker, args=(audio_queue, py_face, socket_connection, default_animation_thread))
     audio_worker_thread.start()
     
+    # Ask for input mode once: 't' for text, 'r' for push-to-talk recording, 'q' to quit
+    mode = ""
+    while mode not in ['t', 'r']:
+        mode = input("Choose input mode: type 't' for text input or 'r' for push-to-talk recording (or 'q' to quit): ").strip().lower()
+        if mode == 'q':
+            return
+
     try:
         while True:
-            user_choice = input("Enter text, or type 'r' for push-to-talk recording (or 'q' to quit): ").strip().lower()
-            if user_choice == 'q':
-                break
-            elif user_choice == 'r':
-                print("Push-to-talk mode: Press and hold the Right Ctrl key to record, then release to finish (or press 'q' to cancel).")
-                
+            if mode == 'r':
+                # Push-to-talk mode (always record using Right Ctrl)
+                print("\nPush-to-talk mode: Press and hold the Right Ctrl key to record, then release to finish (or press 'q' to cancel).")
+                # Wait until the user presses Right Ctrl (with a small delay to avoid busy waiting)
                 while not keyboard.is_pressed('right ctrl'):
                     if keyboard.is_pressed('q'):
-                        print("Recording cancelled.")
-                        break
+                        print("Recording cancelled. Exiting push-to-talk mode.")
+                        return  # Alternatively, you might break out or switch mode
                     time.sleep(0.01)
-                if keyboard.is_pressed('q'):
-                    continue
-                    
+                # Record until Right Ctrl is released
                 audio_bytes = record_audio_until_release()
                 transcription, _ = transcribe_audio(audio_bytes)
                 if transcription:
@@ -91,7 +97,10 @@ def main():
                     print("Transcription failed. Please try again.")
                     continue
             else:
-                user_input = user_choice
+                # Text input mode
+                user_input = input("Enter text (or 'q' to quit): ").strip()
+                if user_input.lower() == 'q':
+                    break
 
             flush_queue(chunk_queue)
             flush_queue(audio_queue)
@@ -102,6 +111,7 @@ def main():
             save_chat_log(chat_history)
 
     finally:
+        # Clean up all threads and close connections
         chunk_queue.join()
         chunk_queue.put(None)
         tts_worker_thread.join()
