@@ -7,6 +7,11 @@ from queue import Queue, Empty
 import threading
 import keyboard
 import pygame
+import warnings
+warnings.filterwarnings(
+    "ignore", 
+    message="Couldn't find ffmpeg or avconv - defaulting to ffmpeg, but may not work"
+)
 import time
 
 from livelink.connect.livelink_init import create_socket_connection, initialize_py_face
