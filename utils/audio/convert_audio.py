@@ -3,7 +3,7 @@ convert_audio.py
 ----------------
 This module provides functions to convert and validate audio data.
 It handles raw PCM wrapping, file conversion to WAV, and safe conversions
-using pydub. The functionality is kept intact with improved readability.
+using pydub. 
 """
 
 import io
@@ -13,8 +13,6 @@ from pydub import AudioSegment
 import soundfile as sf
 from scipy.io.wavfile import write
 
-# Optional: Import magic only when needed (inside the function) to avoid
-# issues on systems where it's not installed.
 # import magic  
 
 
