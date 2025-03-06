@@ -1,6 +1,6 @@
 # NeuroSync Player
 
-### **06/03/2025 Bug fixes + update to llm_to_face.py**
+### **06/03/2025 Bug fixes + update to llm_to_face.py + added twitch_llm.py for connecting your llm to twitch**
 
 - Text to audio when using Elevenlabs was returning static. Bug left over from OpenAI realtime addition, fixed.
 - Realtime audio loading then needed correcting, temporary fix added.
@@ -13,6 +13,8 @@
       - its better/faster/cheaper than OpenAI realtime api by a long way.
 
 - Added Llama3.1 api samples to help you get started with LLM integration locally.
+
+- twitch_llm.py added to allow connection of llm powered metahuman to the chat so it can respond to its viewers.
 
 ### **01/03/2025 WIP OpenAI realtime API integration**
 
