@@ -11,8 +11,8 @@ warnings.filterwarnings(
     message="Couldn't find ffmpeg or avconv - defaulting to ffmpeg, but may not work"
 )
 
-import keyboard  # For key detection
-import time      # For sleep in push-to-talk loop
+import keyboard  
+import time      
 
 from livelink.connect.livelink_init import create_socket_connection, initialize_py_face
 from livelink.animations.default_animation import default_animation_loop, stop_default_animation
@@ -91,7 +91,7 @@ def main():
                 audio_bytes = record_audio_until_release()
                 transcription, _ = transcribe_audio(audio_bytes)
                 if transcription:
-                    print(f"Transcription: {transcription}")
+                 #   print(f"Transcription: {transcription}")
                     user_input = transcription
                 else:
                     print("Transcription failed. Please try again.")
