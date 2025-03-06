@@ -3,7 +3,7 @@
 ### **06/03/2025 Bug fixes**
 
 - Text to audio when using Elevenlabs was returning static. Bug left over from OpenAI realtime addition, fixed.
-- Realtime audio loading then needing correcting, temporary fix added.
+- Realtime audio loading then needed correcting, temporary fix added.
 - Refactored everything to keep it in its own place. Some things are still messy and are a WIP.
 
 Added Llama3.1 api samples to help you get started with LLM integration locally.
