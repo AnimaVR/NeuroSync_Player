@@ -1,3 +1,5 @@
+
+
 import requests
 import openai
 from threading import Thread
@@ -53,12 +55,18 @@ class SentenceBuilder:
         """
         Add a token to the internal buffer.
         Flush the buffer if:
+          - The token contains a newline (considered a sentence break).
           - The combined length exceeds max_chunk_length.
           - The token count exceeds flush_token_count.
           - A sentence-ending punctuation is encountered (unless it's an abbreviation).
         """
         self.buffer.append(token)
         self.token_count += 1
+
+        # Flush immediately if the token contains a newline.
+        if '\n' in token:
+            self._flush_buffer()
+            return
 
         # Flush if raw character length is exceeded
         if self._current_length() >= self.max_chunk_length:
