@@ -70,7 +70,7 @@ def pre_encode_facial_data_blend_in(facial_data: List[np.ndarray], py_face, fps:
     
     # --- Added: Calculate and print total blend in duration ---
     blend_in_duration = time.time() - blend_in_start
-    print(f"Blend in completed in {blend_in_duration:.3f} seconds.")
+ #   print(f"Blend in completed in {blend_in_duration:.3f} seconds.")
 
     # Main animation loop: Replace blink with default animation
     for frame_index, frame_data in enumerate(facial_data[blend_in_frames:-blend_out_frames]):
@@ -128,7 +128,7 @@ def pre_encode_facial_data_blend_out(facial_data: List[np.ndarray], py_face, fps
     
     # --- Added: Calculate and print total blend out duration ---
     blend_out_duration = time.time() - blend_out_start
-    print(f"Blend out completed in {blend_out_duration:.3f} seconds.")
+#    print(f"Blend out completed in {blend_out_duration:.3f} seconds.")
 
     return encoded_data
 
@@ -157,7 +157,7 @@ def pre_encode_facial_data(facial_data: List[np.ndarray], py_face, fps: int = 60
     
     # --- Added: Calculate and print total blend in duration ---
     blend_in_duration = time.time() - blend_in_start
-    print(f"Blend in completed in {blend_in_duration:.3f} seconds.")
+ #   print(f"Blend in completed in {blend_in_duration:.3f} seconds.")
 
     # Main animation loop: Replace blink with default animation
     for frame_index, frame_data in enumerate(facial_data[blend_in_frames:-blend_out_frames]):
@@ -181,7 +181,7 @@ def pre_encode_facial_data(facial_data: List[np.ndarray], py_face, fps: int = 60
     
     # --- Added: Calculate and print total blend out duration ---
     blend_out_duration = time.time() - blend_out_start
-    print(f"Blend out completed in {blend_out_duration:.3f} seconds.")
+ #   print(f"Blend out completed in {blend_out_duration:.3f} seconds.")
 
     return encoded_data
 
