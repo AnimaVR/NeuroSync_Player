@@ -13,7 +13,6 @@ warnings.filterwarnings(
 import keyboard  
 import time      
 
-# === Original Imports and Functions ===
 from livelink.connect.livelink_init import create_socket_connection, initialize_py_face
 from livelink.animations.default_animation import default_animation_loop, stop_default_animation
 
@@ -25,7 +24,6 @@ from utils.audio_face_workers import audio_face_queue_worker
 from utils.stt.transcribe_whisper import transcribe_audio
 from utils.audio.record_audio import record_audio_until_release
 
-# Configuration for LLM and audio
 USE_LOCAL_LLM = True     
 USE_STREAMING = True   
 LLM_API_URL = "http://127.0.0.1:5050/generate_llama"
