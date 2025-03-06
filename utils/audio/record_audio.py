@@ -4,7 +4,9 @@ import numpy as np
 import keyboard
 import soundfile as sf
 
-def record_audio_until_release(sr=22050):
+# for the best results, record in 88200 | we overide this for the openai realtime api to the correct input.
+
+def record_audio_until_release(sr=88200):
     """Record audio from the default microphone until the right Ctrl key is released."""
     p = pyaudio.PyAudio()
     stream = p.open(format=pyaudio.paInt16,
