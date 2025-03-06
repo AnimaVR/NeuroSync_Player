@@ -16,6 +16,8 @@
 
 - twitch_llm.py added to allow connection of llm powered metahuman to the chat so it can respond to its viewers.
 
+- youtube_llm.py added to allow connection of llm powered metahuman to the chat so it can respond to its viewers.
+
 ### **01/03/2025 WIP OpenAI realtime API integration**
 
 *Work in progress* so dont expect it to be perfect, but we are exploring how to stream the realtime api with the face data - it works, with some caveats : 
