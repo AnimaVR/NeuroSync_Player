@@ -1,5 +1,13 @@
 # NeuroSync Player
 
+### **06/03/2025 Bug fixes**
+
+- Text to audio when using Elevenlabs was returning static. Bug left over from OpenAI realtime addition, fixed.
+- Realtime audio loading then needing correcting, temporary fix added.
+- Refactored everything to keep it in its own place. Some things are still messy and are a WIP.
+
+Added Llama3.1 api samples to help you get started with LLM integration locally.
+
 ### **01/03/2025 WIP OpenAI realtime API integration**
 
 *Work in progress* so dont expect it to be perfect, but we are exploring how to stream the realtime api with the face data - it works, with some caveats : 
