@@ -1,3 +1,8 @@
+# This software is licensed under a **dual-license model**
+# For individuals and businesses earning **under $1M per year**, this software is licensed under the **MIT License**
+# Businesses or organizations with **annual revenue of $1,000,000 or more** must obtain permission to use this software commercially.
+
+
 import os
 from threading import Thread
 from queue import Queue, Empty
@@ -6,10 +11,11 @@ import pygame
 from livelink.connect.livelink_init import create_socket_connection, initialize_py_face
 from livelink.animations.default_animation import default_animation_loop, stop_default_animation
 
-from utils.api_utils import initialize_directories
-from utils.chat_utils import load_chat_history, save_chat_log
-from utils.llm_utils import stream_llm_chunks  # <-- Using the updated function here
-from utils.audio_workers import tts_worker, audio_queue_worker
+from utils.tts.tts_bridge import tts_worker
+from utils.files.file_utils import initialize_directories
+from utils.llm.chat_utils import load_chat_history, save_chat_log
+from utils.llm.llm_utils import stream_llm_chunks 
+from utils.audio_face_workers import audio_face_queue_worker
 
 # Constants
 USE_LOCAL_LLM = True      # Set to False to use OpenAI API
@@ -30,7 +36,7 @@ llm_config = {
     "LLM_STREAM_URL": LLM_STREAM_URL,
     "OPENAI_API_KEY": OPENAI_API_KEY,
     "max_chunk_length": 500,
-    "flush_token_count": 10  
+    "flush_token_count": 100  
 }
 
 def flush_queue(q):
@@ -60,7 +66,7 @@ def main():
     tts_worker_thread.start()
     
     # Start the audio worker (plays audio sequentially)
-    audio_worker_thread = Thread(target=audio_queue_worker, args=(audio_queue, py_face, socket_connection, default_animation_thread))
+    audio_worker_thread = Thread(target=audio_face_queue_worker, args=(audio_queue, py_face, socket_connection, default_animation_thread))
     audio_worker_thread.start()
     
     try:

@@ -1,5 +1,4 @@
 import requests
-import json
 
 XI_API_KEY = "YOURAPIKEY"
 

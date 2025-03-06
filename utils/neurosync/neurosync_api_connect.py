@@ -29,21 +29,6 @@ def send_audio_to_neurosync(audio_bytes, use_local=True):
         print(f"JSON parsing error: {e}")
         return None
 
-
-def read_audio_file_as_bytes(file_path):
-    if not file_path.lower().endswith('.wav'):
-        print(f"Unsupported file format: {file_path}. Only WAV files are supported.")
-        return None
-    try:
-        with open(file_path, 'rb') as audio_file:
-            return audio_file.read() 
-    except FileNotFoundError:
-        print(f"File not found: {file_path}")
-        return None
-    except Exception as e:
-        print(f"Error reading audio file: {e}")
-        return None
-
 def validate_audio_bytes(audio_bytes):
     return audio_bytes is not None and len(audio_bytes) > 0
 
