@@ -3,6 +3,11 @@
 # Businesses or organizations with **annual revenue of $1,000,000 or more** must obtain permission to use this software commercially.
 
 import pygame
+import warnings
+warnings.filterwarnings(
+    "ignore", 
+    message="Couldn't find ffmpeg or avconv - defaulting to ffmpeg, but may not work"
+)
 import keyboard
 from threading import Thread
 
