@@ -4,7 +4,7 @@
 
 from threading import Thread, Event, Lock
 
-from utils.audio.play_audio import play_audio_from_path, play_audio_from_memory, play_audio_bytes
+from utils.audio.play_audio import play_audio_from_path, play_audio_from_memory, play_audio_bytes, play_audio_from_memory_openai
 from livelink.send_to_unreal import pre_encode_facial_data, send_pre_encoded_data_to_unreal
 from livelink.animations.default_animation import default_animation_loop, stop_default_animation
 from livelink.connect.livelink_init import initialize_py_face
@@ -29,7 +29,7 @@ def play_audio_and_animation(playback_audio, playback_facial_data, start_event, 
     """
     Plays audio and sends animation data using separate threads.
     """
-    audio_thread = Thread(target=play_audio_from_memory, args=(playback_audio, start_event))
+    audio_thread = Thread(target=play_audio_from_memory_openai, args=(playback_audio, start_event))
     data_thread = Thread(target=send_pre_encoded_data_to_unreal, args=(playback_facial_data, start_event, 60, socket_connection))
 
     audio_thread.start()
