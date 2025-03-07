@@ -86,7 +86,7 @@ def merge_animation_data_into_facial_data(facial_data, animation_data, dimension
 
 
 # -------------------- Emotion Merging --------------------
-def merge_emotion_data_into_facial_data_wrapper(facial_data, emotion_animation_data, alpha=0.8, blend_frame_count=32):
+def merge_emotion_data_into_facial_data_wrapper(facial_data, emotion_animation_data, alpha=0.8):
     """
     Merges preloaded emotion animation data into facial_data.
     It blends the specified dimensions additively and then smooths the loop.
@@ -150,8 +150,5 @@ def merge_emotion_data_into_facial_data_wrapper(facial_data, emotion_animation_d
     
     # Merge using additive blending.
     facial_data = merge_animation_data_into_facial_data(facial_data, emotion_animation_data, dimensions, alpha)
-    
-    # Smooth the transition for the selected dimensions.
-    blend_data_dimensions_to_loop(facial_data, dimensions, blend_frame_count)
-    
+       
     return facial_data
