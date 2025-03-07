@@ -15,12 +15,12 @@ from livelink.send_to_unreal import pre_encode_facial_data, send_pre_encoded_dat
 from livelink.animations.default_animation import default_animation_loop, stop_default_animation
 from livelink.connect.livelink_init import initialize_py_face 
 
-# Import emotion functions and preloaded global emotion_animations.
 from livelink.animations.animation_emotion import (
     determine_highest_emotion, 
-    merge_emotion_data_into_facial_data_wrapper,  
-    emotion_animations
+    merge_emotion_data_into_facial_data_wrapper
 )
+
+from livelink.animations.animation_loader import emotion_animations
 
 queue_lock = Lock()
 
