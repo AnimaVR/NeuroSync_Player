@@ -1,9 +1,9 @@
-
-
 import requests
 import openai
 from threading import Thread
 from queue import Queue
+import re
+import string
 
 ##############################
 # UI Update Function
@@ -42,7 +42,7 @@ class SentenceBuilder:
         "vs.", "e.g.", "i.e.", "etc.", "p.s."
     }
 
-    def __init__(self, chunk_queue, max_chunk_length=500, flush_token_count=50):
+    def __init__(self, chunk_queue, max_chunk_length=500, flush_token_count=300):
         self.chunk_queue = chunk_queue
         self.max_chunk_length = max_chunk_length
         self.flush_token_count = flush_token_count
@@ -120,13 +120,11 @@ class SentenceBuilder:
         return last_word in self.ABBREVIATIONS
 
     def _flush_buffer(self, force=False):
-        """
-        Flush the current buffer by joining its tokens and putting
-        the resulting chunk into the chunk_queue. Then, reset the buffer.
-        """
         chunk_text_val = ''.join(self.buffer).strip()
-        if chunk_text_val:
-            self.chunk_queue.put(chunk_text_val)
+        # Clean the chunk text using the helper function.
+        clean_chunk = clean_text_for_tts(chunk_text_val)
+        if clean_chunk:  # Only enqueue if there's something meaningful.
+            self.chunk_queue.put(clean_chunk)
         self.buffer = []
         self.token_count = 0
 
@@ -144,6 +142,26 @@ class SentenceBuilder:
         # Flush any remaining tokens after exiting loop.
         self.flush_remaining()
 
+
+def clean_text_for_tts(text: str) -> str:
+    """
+    Remove unwanted patterns from text:
+      - Anything between asterisks, e.g. *some words*
+      - Anything between parentheses, e.g. (some words)
+    Then trim whitespace. If the result is empty or only punctuation,
+    return an empty string.
+    """
+    # Remove text enclosed in asterisks (e.g., *example*)
+    text = re.sub(r'\*[^*]+\*', '', text)
+    # Remove text enclosed in parentheses (e.g., (example))
+    text = re.sub(r'\([^)]*\)', '', text)
+    # Trim whitespace
+    clean_text = text.strip()
+    # If the cleaned text is empty, exactly '...', or only punctuation/spaces, return empty.
+    if (not clean_text or clean_text == "..." or 
+        all(char in string.punctuation or char.isspace() for char in clean_text)):
+        return ""
+    return clean_text
 ##############################
 # LLM Streaming Function
 ##############################
@@ -156,7 +174,7 @@ def stream_llm_chunks(user_input, chat_history, chunk_queue, config):
     Returns the full response as a string.
     """
     # Build messages from chat history and user input
-    messages = [{"role": "system", "content": "You are an AI assistant responding concisely."}]
+    messages = [{"role": "system", "content": "You are Mai, a youtube streamer for NeuroSync Audio to Face and are embodied using a cutting edge realtime audio to face model that drives your face called NeuroSync responding concisely. Talk naturally and never use containing marks like *this* to describe how you are acting, you are embodied, we can see you. It is critical to keep responses short and to answer the most interesting questions without using *things like this* or (comments like this) as you are speaking with audio to face and the user cant see the text chat. Don't say you are AI, we already know you are. Speak naturally and like a human might with humour and dryness."}]
     for entry in chat_history:
         messages.append({"role": "user", "content": entry["input"]})
         messages.append({"role": "assistant", "content": entry["response"]})
