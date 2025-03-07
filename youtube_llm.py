@@ -92,10 +92,9 @@ def main():
     youtube_fetcher_thread.daemon = True
     youtube_fetcher_thread.start()
     
-    # Existing code snippet in youtube_llm.py
     youtube_worker_thread = Thread(
         target=youtube_input_worker, 
-        args=(youtube_queue, chat_history, chunk_queue, llm_lock, llm_config)  # <-- Added llm_config here
+        args=(youtube_queue, chat_history, chunk_queue, llm_lock, llm_config)  
     )
     youtube_worker_thread.daemon = True
     youtube_worker_thread.start()
