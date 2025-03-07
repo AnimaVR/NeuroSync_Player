@@ -56,6 +56,7 @@ YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY", "")
 YOUTUBE_LIVE_CHAT_ID = os.getenv("YOUTUBE_LIVE_CHAT_ID", "")
 YOUTUBE_VIDEO_ID = os.getenv("YOUTUBE_VIDEO_ID", "")
 
+
 def main():
     initialize_directories()
     py_face = initialize_py_face()
