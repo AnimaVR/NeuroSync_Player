@@ -1,5 +1,4 @@
 # utils/youtube_utils.py
-# utils/youtube_utils.py
 import time
 from googleapiclient.discovery import build
 
@@ -69,7 +68,8 @@ def run_youtube_chat_fetcher(message_queue, api_key, live_chat_id):
         polling_interval = response.get('pollingIntervalMillis', MIN_POLLING_INTERVAL * 1000) / 1000.0
         time.sleep(max(polling_interval, MIN_POLLING_INTERVAL))
 
-def youtube_input_worker(youtube_queue, chat_history, chunk_queue, llm_lock):
+# Modified youtube_input_worker function
+def youtube_input_worker(youtube_queue, chat_history, chunk_queue, llm_lock, config):  # <-- Added 'config'
     """
     Worker that checks the YouTube queue every 0.5 seconds.
     When new chat messages are detected, it batches them into a single input
@@ -105,7 +105,8 @@ def youtube_input_worker(youtube_queue, chat_history, chunk_queue, llm_lock):
                 if pygame.mixer.get_init():
                     pygame.mixer.stop()
                 # Process the combined message through the AI.
-                full_response = stream_llm_chunks(combined_message, chat_history, chunk_queue)
+                # Updated call: passing the 'config' parameter.
+                full_response = stream_llm_chunks(combined_message, chat_history, chunk_queue, config=config)
                 # Append the combined input and its response to the chat history.
                 chat_history.append({"input": combined_message, "response": full_response})
                 save_chat_log(chat_history)
