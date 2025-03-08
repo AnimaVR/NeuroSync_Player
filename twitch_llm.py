@@ -85,7 +85,11 @@ def main():
     twitch_bot_thread.daemon = True
     twitch_bot_thread.start()
     
-    twitch_worker_thread = Thread(target=twitch_input_worker, args=(twitch_queue, chat_history, chunk_queue, llm_lock))
+    # --- Updated: Pass llm_config to twitch_input_worker ---
+    twitch_worker_thread = Thread(
+        target=twitch_input_worker,
+        args=(twitch_queue, chat_history, chunk_queue, llm_lock, llm_config)
+    )
     twitch_worker_thread.daemon = True
     twitch_worker_thread.start()
     
@@ -122,6 +126,7 @@ def main():
                 flush_queue(audio_queue)
                 if pygame.mixer.get_init():
                     pygame.mixer.stop()
+                # Here we already pass the config properly.
                 full_response = stream_llm_chunks(user_input, chat_history, chunk_queue, config=llm_config)
                 chat_history.append({"input": user_input, "response": full_response})
                 save_chat_log(chat_history)
