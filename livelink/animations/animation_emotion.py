@@ -21,7 +21,7 @@ def determine_highest_emotion(facial_data, perform_calculation=True):
     # Compute average for each emotion dimension
     emotion_averages = np.sum(emotion_data, axis=0) / facial_data.shape[0]
     # Apply a weight to "Neutral" (assumed index 4)
-    neutral_weight = 0.6
+    neutral_weight = 0.00
     emotion_averages[4] *= neutral_weight
     
     emotion_labels = ["Angry", "Disgusted", "Fearful", "Happy", "Neutral", "Sad", "Surprised"]
@@ -102,18 +102,10 @@ def merge_emotion_data_into_facial_data_wrapper(facial_data, emotion_animation_d
     """
     dimensions = [
         # Eye-related blend shapes
-        FaceBlendShape.EyeBlinkLeft.value,
-        FaceBlendShape.EyeLookDownLeft.value,
-        FaceBlendShape.EyeLookInLeft.value,
-        FaceBlendShape.EyeLookOutLeft.value,
-        FaceBlendShape.EyeLookUpLeft.value,
+      
         FaceBlendShape.EyeSquintLeft.value,
         FaceBlendShape.EyeWideLeft.value,
-        FaceBlendShape.EyeBlinkRight.value,
-        FaceBlendShape.EyeLookDownRight.value,
-        FaceBlendShape.EyeLookInRight.value,
-        FaceBlendShape.EyeLookOutRight.value,
-        FaceBlendShape.EyeLookUpRight.value,
+
         FaceBlendShape.EyeSquintRight.value,
         FaceBlendShape.EyeWideRight.value,
 
@@ -123,7 +115,7 @@ def merge_emotion_data_into_facial_data_wrapper(facial_data, emotion_animation_d
         FaceBlendShape.BrowInnerUp.value,
         FaceBlendShape.BrowOuterUpLeft.value,
         FaceBlendShape.BrowOuterUpRight.value,
-
+        
         # Cheek-related blend shapes
         FaceBlendShape.CheekPuff.value,
         FaceBlendShape.CheekSquintLeft.value,
@@ -132,17 +124,27 @@ def merge_emotion_data_into_facial_data_wrapper(facial_data, emotion_animation_d
         # Nose-related blend shapes
         FaceBlendShape.NoseSneerLeft.value,
         FaceBlendShape.NoseSneerRight.value,
+        FaceBlendShape.MouthLeft.value,
+        FaceBlendShape.MouthRight.value,
+        FaceBlendShape.MouthSmileLeft.value,
+        FaceBlendShape.MouthSmileRight.value,
+        FaceBlendShape.MouthFrownLeft.value,
+        FaceBlendShape.MouthFrownRight.value,
+        FaceBlendShape.MouthDimpleLeft.value,
+        FaceBlendShape.MouthDimpleRight.value,
+        FaceBlendShape.MouthStretchLeft.value,
+        FaceBlendShape.MouthStretchRight.value,
+        FaceBlendShape.MouthRollLower.value,
+        FaceBlendShape.MouthRollUpper.value,
+        FaceBlendShape.MouthShrugLower.value,
+        FaceBlendShape.MouthShrugUpper.value,
+        FaceBlendShape.MouthPressLeft.value,
+        FaceBlendShape.MouthPressRight.value,
+        FaceBlendShape.MouthLowerDownLeft.value,
+        FaceBlendShape.MouthLowerDownRight.value,
+        FaceBlendShape.MouthUpperUpLeft.value,
+        FaceBlendShape.MouthUpperUpRight.value,
 
-        # Head and eye rotation blend shapes
-        FaceBlendShape.HeadYaw.value,
-        FaceBlendShape.HeadPitch.value,
-        FaceBlendShape.HeadRoll.value,
-        FaceBlendShape.LeftEyeYaw.value,
-        FaceBlendShape.LeftEyePitch.value,
-        FaceBlendShape.LeftEyeRoll.value,
-        FaceBlendShape.RightEyeYaw.value,
-        FaceBlendShape.RightEyePitch.value,
-        FaceBlendShape.RightEyeRoll.value,
     ]
     
     # Ensure emotion_animation_data matches the length of facial_data.
@@ -150,5 +152,8 @@ def merge_emotion_data_into_facial_data_wrapper(facial_data, emotion_animation_d
     
     # Merge using additive blending.
     facial_data = merge_animation_data_into_facial_data(facial_data, emotion_animation_data, dimensions, alpha)
+    
+    # -------------------- Added Print Statement --------------------
+    print("Successfully merged emotion data!")  # This print indicates successful merging of emotion data.
        
     return facial_data
