@@ -69,8 +69,7 @@ def run_audio_animation_from_bytes(audio_bytes, generated_facial_data, py_face, 
         if dominant_emotion in emotion_animations and len(emotion_animations[dominant_emotion]) > 0:
             selected_animation = random.choice(emotion_animations[dominant_emotion])
             generated_facial_data = merge_emotion_data_into_facial_data_wrapper(
-                generated_facial_data, selected_animation, alpha=0.7, blend_frame_count=32
-            )
+                generated_facial_data, selected_animation, alpha=0.7)
     
     # Create a separate instance for encoding (to include blend in/out data).
     encoding_face = initialize_py_face()
@@ -115,9 +114,7 @@ def run_audio_animation(audio_path, generated_facial_data, py_face, socket_conne
         print(f"Dominant emotion: {dominant_emotion}")
         if dominant_emotion in emotion_animations and len(emotion_animations[dominant_emotion]) > 0:
             selected_animation = random.choice(emotion_animations[dominant_emotion])
-            generated_facial_data = merge_emotion_data_into_facial_data_wrapper(
-                generated_facial_data, selected_animation, alpha=0.7, blend_frame_count=32
-            )
+            generated_facial_data = merge_emotion_data_into_facial_data_wrapper(generated_facial_data, selected_animation, alpha=0.7)
     
     # Create a temporary encoding instance for blending.
     encoding_face = initialize_py_face()
@@ -145,7 +142,6 @@ def run_audio_animation(audio_path, generated_facial_data, py_face, socket_conne
         stop_default_animation.clear()
         default_animation_thread = Thread(target=default_animation_loop, args=(py_face,))
         default_animation_thread.start()
-
 
 
 
