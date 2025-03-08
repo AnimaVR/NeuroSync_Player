@@ -1,4 +1,4 @@
-# utils/twitch_utils.py
+# --- utils/twitch_utils.py ---
 import time
 import asyncio
 from queue import Empty
@@ -32,7 +32,8 @@ def run_twitch_bot(message_queue, nick, token, channel):
     bot = TwitchChatBot(message_queue, nick, token, channel)
     bot.run()
 
-def twitch_input_worker(twitch_queue, chat_history, chunk_queue, llm_lock):
+# --- Modified function signature to include `config` ---
+def twitch_input_worker(twitch_queue, chat_history, chunk_queue, llm_lock, config):
     """
     Worker that checks the Twitch queue every 0.5 seconds.
     When a new chat message is found, it processes it with the LLM endpoint.
@@ -58,7 +59,8 @@ def twitch_input_worker(twitch_queue, chat_history, chunk_queue, llm_lock):
                     flush_queue(chunk_queue)
                     if pygame.mixer.get_init():
                         pygame.mixer.stop()
-                    full_response = stream_llm_chunks(twitch_message, chat_history, chunk_queue)
+                    # --- Pass the config to stream_llm_chunks ---
+                    full_response = stream_llm_chunks(twitch_message, chat_history, chunk_queue, config=config)
                     chat_history.append({"input": twitch_message, "response": full_response})
                     save_chat_log(chat_history)
         except Empty:
