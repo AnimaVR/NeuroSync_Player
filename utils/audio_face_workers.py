@@ -98,35 +98,53 @@ def audio_face_queue_worker(audio_face_queue, py_face, socket_connection, defaul
         run_audio_animation_from_bytes(audio_bytes, facial_data, py_face, socket_connection, default_animation_thread)
         audio_face_queue.task_done()
 
-
 def process_wav_file(wav_file, py_face, socket_connection, default_animation_thread):
     """
     Processes the wav file by sending it to the API and running the animation.
     """
+    # Inform the user that processing is starting
+    print(f"Starting processing of WAV file: {wav_file}")  # << Added print
+
     # Check if the file exists
     if not os.path.exists(wav_file):
-        print(f"File {wav_file} does not exist.")
+        print(f"File {wav_file} does not exist.")  # << Existing error print
         return
+
+    # Inform the user that the file exists and we are reading it
+    print("File exists. Reading audio file bytes...")  # << Added print
 
     # Read the wav file as bytes
     audio_bytes = read_audio_file_as_bytes(wav_file)
 
     if audio_bytes is None:
-        print(f"Failed to read {wav_file}")
+        print(f"Failed to read {wav_file}")  # << Existing error print
         return
+
+    # Inform the user that the audio file was read successfully
+    print("Audio file read successfully. Sending audio to the API for processing...")  # << Added print
 
     # Send the audio bytes to the API and get the blendshapes
     blendshapes = send_audio_to_neurosync(audio_bytes)
 
     if blendshapes is None:
-        print("Failed to get blendshapes from the API.")
+        print("Failed to get blendshapes from the API.")  # << Existing error print
         return
+
+    # Inform the user that the blendshapes were received
+    print("Received blendshapes from the API. Running audio animation...")  # << Added print
 
     # Run the animation using the blendshapes data
     run_audio_animation(wav_file, blendshapes, py_face, socket_connection, default_animation_thread)
 
+    # Inform the user that the animation is complete and data is being saved
+    print("Animation finished. Saving generated blendshape data...")  # << Added print
+
     # Save the generated blendshape data
     save_generated_data_from_wav(wav_file, blendshapes)
+    
+    # Inform the user that all processing is complete
+    print("Processing completed successfully.")  # << Added print
+
 
 def conversion_worker(conversion_queue, audio_queue, sample_rate, channels, sample_width):
     while True:
