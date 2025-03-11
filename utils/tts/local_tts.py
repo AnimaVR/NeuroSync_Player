@@ -2,7 +2,7 @@
 import requests
 
 # Constants for the local TTS endpoint
-LOCAL_TTS_URL = "http://192.168.1.1:8000/generate_speech_nk"  # Update if needed
+LOCAL_TTS_URL = "http://127.0.0.1:8000/generate_speech_nk"  # Update if needed
 
 
 def call_local_tts(text):
