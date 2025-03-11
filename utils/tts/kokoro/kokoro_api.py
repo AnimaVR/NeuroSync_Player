@@ -68,6 +68,7 @@ def generate_speech_segment_kokoro(text):
             )
             audio_segments = []
             for i, (gs, ps, audio) in enumerate(generator):
+                
             #    print(f"Kokoro segment {i}: graphemes: {gs}, phonemes: {ps}")
                 audio_segments.append(audio)
 
@@ -76,14 +77,18 @@ def generate_speech_segment_kokoro(text):
                 return None
 
             full_audio = np.concatenate(audio_segments)
+            
             # Trim silence and apply fade-in/out
             full_audio = trim_and_fade(full_audio, sample_rate=24000, threshold=0.01, fade_duration=0.05)
 
             # Write the full audio into a buffer as WAV
             buffer = BytesIO()
             sf.write(buffer, full_audio, 24000, format='WAV')
+            
             buffer.seek(0)
-          #  print("Kokoro speech generation successful.")
+            
+            print("Kokoro speech generation successful.")
+           
             return buffer.getvalue()
 
     except Exception as e:
@@ -103,7 +108,6 @@ def generate_speech_kokoro_endpoint():
     else:
         return result, 200, {'Content-Type': 'audio/wav'}
 
-# ------------------- Run All Flask Apps -------------------
 if __name__ == '__main__':
     def run_kokoro_app():
         print("Starting Kokoro App on port 8000...")
