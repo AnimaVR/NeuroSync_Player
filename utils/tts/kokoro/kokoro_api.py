@@ -9,6 +9,8 @@ app_kokoro = Flask("kokoro_app")
 
 #  make sure you do this  : pip install -q kokoro>=0.8.2 soundfile
 
+# https://huggingface.co/hexgrad/Kokoro-82M APACHE LICENCE http://www.apache.org/licenses/LICENSE-2.0 
+
 # Initialize the Kokoro pipeline with American English ('a').
 # Adjust lang_code and voice as needed.
 kokoro_pipeline = KPipeline(lang_code='a')
