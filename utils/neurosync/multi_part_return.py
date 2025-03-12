@@ -1,7 +1,7 @@
 import json
 import requests
 
-# getting ready for a person real-time server - generating in one go, rather than many for a single input.
+# getting ready for a personal real-time server - generating in one go, rather than many for a single input.
 
 NEW_TTS_ENDPOINT = "http://127.0.0.1:8000/synthesize_and_blendshapes"
 
