@@ -1,5 +1,11 @@
 # NeuroSync Player
 
+### **12/03/2025 Local Real-Time API Toy**
+
+[Realtime AI endpoint server](https://github.com/AnimaVR/NeuroSync_Real-Time_API) that combines tts and neurosync generations available.
+
+Includes code for various helpful AI endpoints (stt, tts, embedding, vision) to use with the player, or your own projects. Be mindful of licences for your use case.
+
 ### **06/03/2025 Bug fixes + update to llm_to_face.py + added twitch_llm.py for connecting your llm to twitch**
 
 - Text to audio when using Elevenlabs was returning static. Bug left over from OpenAI realtime addition, fixed.
