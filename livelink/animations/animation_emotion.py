@@ -21,7 +21,7 @@ def determine_highest_emotion(facial_data, perform_calculation=True):
     # Compute average for each emotion dimension
     emotion_averages = np.sum(emotion_data, axis=0) / facial_data.shape[0]
     # Apply a weight to "Neutral" (assumed index 4)
-    neutral_weight = 0.00
+    neutral_weight = 0.4
     emotion_averages[4] *= neutral_weight
     
     emotion_labels = ["Angry", "Disgusted", "Fearful", "Happy", "Neutral", "Sad", "Surprised"]
