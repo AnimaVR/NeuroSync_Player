@@ -204,7 +204,7 @@ def stream_llm_chunks(user_input, chat_history, chunk_queue, config):
             try:
                 with requests.post(config["LLM_STREAM_URL"], json=payload, stream=True) as response:
                     response.raise_for_status()
-                    print("Assistant Response (streaming):\n", flush=True)
+                    print("\n\nAssistant Response (streaming):\n", flush=True)
                     
                     # Use iter_content with a small chunk size so we process tokens as soon as they are available.
                     for token in response.iter_content(chunk_size=1, decode_unicode=True):
