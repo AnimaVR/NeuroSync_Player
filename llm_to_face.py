@@ -19,7 +19,6 @@ from livelink.animations.default_animation import default_animation_loop, stop_d
 
 from utils.tts.tts_bridge import tts_worker
 from utils.files.file_utils import initialize_directories
-from utils.llm.chat_utils import load_chat_history, save_chat_log
 from utils.llm.llm_utils import stream_llm_chunks 
 from utils.audio_face_workers import audio_face_queue_worker
 from utils.stt.transcribe_whisper import transcribe_audio
