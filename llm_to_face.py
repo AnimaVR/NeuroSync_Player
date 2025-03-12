@@ -29,9 +29,11 @@ USE_LOCAL_LLM = True
 USE_STREAMING = True   
 LLM_API_URL = "http://127.0.0.1:5050/generate_llama"
 LLM_STREAM_URL = "http://127.0.0.1:5050/generate_stream"
-VOICE_NAME = 'Lily'
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")  
+
+VOICE_NAME = 'Lily'
 USE_LOCAL_AUDIO = True 
+USE_COMBINED_ENDPOINT = False # only do this if you have the new endpoint for taking in text and retuing audio and blendshapes in one call.
 
 llm_config = {
     "USE_LOCAL_LLM": USE_LOCAL_LLM,
@@ -64,7 +66,7 @@ def main():
     # Create queues for TTS and audio
     chunk_queue = Queue()
     audio_queue = Queue()
-    tts_worker_thread = Thread(target=tts_worker, args=(chunk_queue, audio_queue, USE_LOCAL_AUDIO, VOICE_NAME))
+    tts_worker_thread = Thread(target=tts_worker, args=(chunk_queue, audio_queue, USE_LOCAL_AUDIO, VOICE_NAME, USE_COMBINED_ENDPOINT))
     tts_worker_thread.start()
     audio_worker_thread = Thread(target=audio_face_queue_worker, args=(audio_queue, py_face, socket_connection, default_animation_thread))
     audio_worker_thread.start()
@@ -80,7 +82,7 @@ def main():
         while True:
             if mode == 'r':
                 # Push-to-talk mode (always record using Right Ctrl)
-                print("\nPush-to-talk mode: Press and hold the Right Ctrl key to record, then release to finish (or press 'q' to cancel).")
+                print("\n\nPush-to-talk mode: Press and hold the Right Ctrl key to record, then release to finish (or press 'q' to cancel).")
                 # Wait until the user presses Right Ctrl (with a small delay to avoid busy waiting)
                 while not keyboard.is_pressed('right ctrl'):
                     if keyboard.is_pressed('q'):
