@@ -117,7 +117,7 @@ def main():
                     continue
             else:
                 # Text input
-                user_input = input("Enter text (or 'q' to quit): ").strip()
+                user_input = input("\n\nEnter text (or 'q' to quit): ").strip()
                 if user_input.lower() == 'q':
                     break
 
