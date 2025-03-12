@@ -15,7 +15,6 @@ voices = {
     "Will": "bIHbv24MWmeRgasZH58o",
     "Jessica": "cgSgspJ2msm6clMCkdW9",
     "Eric": "cjVigY5qzO86Huf0OWal",
-    "Chris1": "iP95p4xoKVk53GoZ742B",
     "Brian": "nPczCjzI2devNBz1zQrb",
     "Daniel": "onwK4e9ZLuTAKqWW03F9",
     "Lily": "pFZP5JQG7iQjIQuC4Bku",
