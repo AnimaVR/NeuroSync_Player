@@ -33,7 +33,7 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 VOICE_NAME = 'Lily'
 USE_LOCAL_AUDIO = True 
-USE_COMBINED_ENDPOINT = False # only do this if you have the new endpoint for taking in text and retuing audio and blendshapes in one call.
+USE_COMBINED_ENDPOINT = False # only do this if you have the new endpoint for taking in text and returing audio and blendshapes in one call.
 
 llm_config = {
     "USE_LOCAL_LLM": USE_LOCAL_LLM,
