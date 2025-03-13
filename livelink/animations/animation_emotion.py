@@ -103,9 +103,12 @@ def merge_emotion_data_into_facial_data_wrapper(facial_data, emotion_animation_d
     dimensions = [
         # Eye-related blend shapes
       
+           
         FaceBlendShape.EyeSquintLeft.value,
+        FaceBlendShape.EyeWideLeft.value,
 
         FaceBlendShape.EyeSquintRight.value,
+        FaceBlendShape.EyeWideRight.value,
 
         # Brow-related blend shapes
         FaceBlendShape.BrowDownLeft.value,
