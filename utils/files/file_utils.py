@@ -101,10 +101,16 @@ def load_facial_data_from_csv(csv_path):
 
     data = data.drop(columns=['Timecode', 'BlendshapeCount'], errors='ignore')
 
-    
     zero_cols = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,
                  51, 52, 53, 54, 55, 56, 57, 58, 59, 60]
 
+
+    for col_idx in zero_cols:
+        if col_idx < len(data.columns):
+            data.iloc[:, col_idx] = 0
+
+
+    return data.values
 
 def save_generated_data(audio_bytes, generated_facial_data):
     unique_id = str(uuid.uuid4())
