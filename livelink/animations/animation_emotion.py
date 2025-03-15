@@ -21,7 +21,7 @@ def determine_highest_emotion(facial_data, perform_calculation=True):
     # Compute average for each emotion dimension
     emotion_averages = np.sum(emotion_data, axis=0) / facial_data.shape[0]
     # Apply a weight to "Neutral" (assumed index 4)
-    neutral_weight = 0.4
+    neutral_weight = 0.6
     emotion_averages[4] *= neutral_weight
     
     emotion_labels = ["Angry", "Disgusted", "Fearful", "Happy", "Neutral", "Sad", "Surprised"]
@@ -58,48 +58,62 @@ def blend_data_dimensions_to_loop(facial_data, dimensions, blend_frame_count):
             blended_value = (1 - alpha) * end_value + alpha * start_value
             facial_data[num_frames - blend_frame_count + i][dim] = blended_value
 
-def merge_animation_data_into_facial_data(facial_data, animation_data, dimensions, alpha=0.7):
+def merge_animation_data_into_facial_data(facial_data, animation_data, dimensions, alpha=1.0):
     """
-    Merges animation_data into facial_data for specified dimensions using blending.
+    Merges animation_data into facial_data for specified dimensions,
+    mimicking the C# approach:
+      1. Adjust the animation data length to match facial_data.
+      2. Compute animation deltas relative to a neutral pose (zeros).
+      3. Add the delta (scaled by alpha) to the facial_data for each specified dimension.
+      4. Use cyclic repetition for animation frames if needed.
+      5. Clamp the result to [0.0, 1.0].
     
-    For each dimension:
-      - If the animation value is higher than the base value, blend them using:
-            final_value = (1 - alpha) * base_value + alpha * animation_value
-      - Otherwise, keep the original base_value.
-    
-    This ensures that if both values are the same (e.g., 0.5), the blended result is 0.5.
-    The result is clamped between 0.0 and 1.0.
+    Parameters:
+        facial_data (list of lists): Base facial data.
+        animation_data (list of lists): Animation data to merge.
+        dimensions (list): Indices of dimensions to blend.
+        alpha (float): Blending weight.
+        
+    Returns:
+        list of lists: Facial data with merged animation data.
     """
-    # Ensure the animation data matches the length of facial_data.
+    # Adjust the animation data to match the length of facial_data.
     animation_data = adjust_animation_data_length(facial_data, animation_data)
+    
+    # Compute animation deltas using a neutral pose (all zeros).
+    # Since neutral pose is zeros, delta is just the animation data value.
+    animation_deltas = []
+    for frame in animation_data:
+        # --- Highlighted Change ---
+        # Instead of conditionally blending, we compute the delta directly for each dimension.
+        frame_delta = [frame[dim] for dim in dimensions]
+        animation_deltas.append(frame_delta)
+    
     num_frames = len(facial_data)
+    animation_frame_count = len(animation_deltas)
     
-    # Copy the original facial data to avoid modifying it in place.
-    blended_facial_data = [frame.copy() for frame in facial_data]
-    
-    # Apply blending for each frame and specified dimension.
+    # Blend the computed deltas into the facial data.
+    # We iterate through each facial frame and add the appropriate delta.
     for i in range(num_frames):
-        for dim in dimensions:
-            base_value = blended_facial_data[i][dim]
-            animation_value = animation_data[i][dim]
+        animation_frame_index = i % animation_frame_count  # Use cyclic repetition.
+        for j, dimension in enumerate(dimensions):
+            # --- Highlighted Change ---
+            # Add the delta (scaled by alpha) directly to the current facial value.
+            delta = animation_deltas[animation_frame_index][j]
+            blended_value = facial_data[i][dimension] + alpha * delta
             
-            # Only blend (i.e., potentially increase) if the animation value is higher than the base value.
-            if animation_value > base_value:
-                # Changed from additive blending to interpolation blending.
-                blended_value = (1 - alpha) * base_value + alpha * animation_value
-            else:
-                blended_value = base_value
-                
-            # Clamp the value to [0.0, 1.0]
+            # Clamp the value to [0.0, 1.0].
             blended_value = min(max(blended_value, 0.0), 1.0)
-            blended_facial_data[i][dim] = blended_value
+            facial_data[i][dimension] = blended_value
             
-    return blended_facial_data
+    return facial_data
+
+
 
 
 
 # -------------------- Emotion Merging --------------------
-def merge_emotion_data_into_facial_data_wrapper(facial_data, emotion_animation_data, alpha=0.7):
+def merge_emotion_data_into_facial_data_wrapper(facial_data, emotion_animation_data, alpha=0.5):
     """
     Merges preloaded emotion animation data into facial_data.
     It blends the specified dimensions additively and then smooths the loop.
@@ -116,12 +130,11 @@ def merge_emotion_data_into_facial_data_wrapper(facial_data, emotion_animation_d
     dimensions = [
         # Eye-related blend shapes
       
-           
-        FaceBlendShape.EyeSquintLeft.value,
-        FaceBlendShape.EyeWideLeft.value,
+     #   FaceBlendShape.EyeSquintLeft.value,
+      #  FaceBlendShape.EyeWideLeft.value,
 
-        FaceBlendShape.EyeSquintRight.value,
-        FaceBlendShape.EyeWideRight.value,
+     #   FaceBlendShape.EyeSquintRight.value,
+       # FaceBlendShape.EyeWideRight.value,
 
         # Brow-related blend shapes
         FaceBlendShape.BrowDownLeft.value,
@@ -138,26 +151,26 @@ def merge_emotion_data_into_facial_data_wrapper(facial_data, emotion_animation_d
         # Nose-related blend shapes
         FaceBlendShape.NoseSneerLeft.value,
         FaceBlendShape.NoseSneerRight.value,
-        FaceBlendShape.MouthLeft.value,
-        FaceBlendShape.MouthRight.value,
+     #   FaceBlendShape.MouthLeft.value,
+     #   FaceBlendShape.MouthRight.value,
         FaceBlendShape.MouthSmileLeft.value,
         FaceBlendShape.MouthSmileRight.value,
         FaceBlendShape.MouthFrownLeft.value,
         FaceBlendShape.MouthFrownRight.value,
         FaceBlendShape.MouthDimpleLeft.value,
         FaceBlendShape.MouthDimpleRight.value,
-        FaceBlendShape.MouthStretchLeft.value,
-        FaceBlendShape.MouthStretchRight.value,
-        FaceBlendShape.MouthRollLower.value,
-        FaceBlendShape.MouthRollUpper.value,
-        FaceBlendShape.MouthShrugLower.value,
-        FaceBlendShape.MouthShrugUpper.value,
-        FaceBlendShape.MouthPressLeft.value,
-        FaceBlendShape.MouthPressRight.value,
-        FaceBlendShape.MouthLowerDownLeft.value,
-        FaceBlendShape.MouthLowerDownRight.value,
-        FaceBlendShape.MouthUpperUpLeft.value,
-        FaceBlendShape.MouthUpperUpRight.value,
+     #   FaceBlendShape.MouthStretchLeft.value,
+     #   FaceBlendShape.MouthStretchRight.value,
+     #   FaceBlendShape.MouthRollLower.value,
+     #   FaceBlendShape.MouthRollUpper.value,
+     #   FaceBlendShape.MouthShrugLower.value,
+     #   FaceBlendShape.MouthShrugUpper.value,
+      #  FaceBlendShape.MouthPressLeft.value,
+      #  FaceBlendShape.MouthPressRight.value,
+     #   FaceBlendShape.MouthLowerDownLeft.value,
+     #   FaceBlendShape.MouthLowerDownRight.value,
+     #   FaceBlendShape.MouthUpperUpLeft.value,
+    #    FaceBlendShape.MouthUpperUpRight.value,
 
     ]
     
@@ -168,6 +181,6 @@ def merge_emotion_data_into_facial_data_wrapper(facial_data, emotion_animation_d
     facial_data = merge_animation_data_into_facial_data(facial_data, emotion_animation_data, dimensions, alpha)
     
     # -------------------- Added Print Statement --------------------
-    print("Successfully merged emotion data!")  # This print indicates successful merging of emotion data.
+  #  print("Successfully merged emotion data!")  # This print indicates successful merging of emotion data.
        
     return facial_data
