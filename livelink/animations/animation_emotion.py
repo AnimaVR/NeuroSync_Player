@@ -58,7 +58,7 @@ def blend_data_dimensions_to_loop(facial_data, dimensions, blend_frame_count):
             blended_value = (1 - alpha) * end_value + alpha * start_value
             facial_data[num_frames - blend_frame_count + i][dim] = blended_value
 
-def merge_animation_data_into_facial_data(facial_data, animation_data, dimensions, alpha=1.0):
+def merge_animation_data_into_facial_data(facial_data, animation_data, dimensions, alpha=0.6):
     """
     Merges animation_data into facial_data for specified dimensions,
     mimicking the C# approach:
