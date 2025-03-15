@@ -1,6 +1,13 @@
+# This software is licensed under a **dual-license model**
+# For individuals and businesses earning **under $1M per year**, this software is licensed under the **MIT License**
+# Businesses or organizations with **annual revenue of $1,000,000 or more** must obtain permission to use this software commercially.
+
+
 from threading import Thread
 import pygame
 import warnings
+import time  # <-- Added: Import the time module for the timer functionality
+
 warnings.filterwarnings(
     "ignore", 
     message="Couldn't find ffmpeg or avconv - defaulting to ffmpeg, but may not work"
@@ -36,13 +43,18 @@ if __name__ == "__main__":
             if text_input.lower() == 'q':
                 break
             elif text_input:
+                start_time = time.time()  # <-- Added: Start the timer before generation begins
+                
                 if use_combined_endpoint:
                     # Combined endpoint: one API call returns both audio and blendshapes.
                     audio_bytes, blendshapes = get_tts_with_blendshapes(text_input)
                     if audio_bytes and blendshapes:
+                        generation_time = time.time() - start_time  # <-- Added: Calculate elapsed time
+                        print(f"Generation took {generation_time:.2f} seconds.")  # <-- Added: Display the generation time
                         run_audio_animation_from_bytes(
                             audio_bytes, blendshapes, py_face, socket_connection, default_animation_thread
                         )
+                        
                         save_generated_data(audio_bytes, blendshapes)
                     else:
                         print("❌ Failed to retrieve audio and blendshapes from the API.")
@@ -57,6 +69,8 @@ if __name__ == "__main__":
                     if audio_bytes:
                         generated_facial_data = send_audio_to_neurosync(audio_bytes)
                         if generated_facial_data is not None:
+                            generation_time = time.time() - start_time  # <-- Added: Calculate elapsed time
+                            print(f"Generation took {generation_time:.2f} seconds.") 
                             run_audio_animation_from_bytes(
                                 audio_bytes, generated_facial_data, py_face, socket_connection, default_animation_thread
                             )
