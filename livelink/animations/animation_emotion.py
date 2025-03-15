@@ -60,9 +60,14 @@ def blend_data_dimensions_to_loop(facial_data, dimensions, blend_frame_count):
 
 def merge_animation_data_into_facial_data(facial_data, animation_data, dimensions, alpha=0.7):
     """
-    Merges animation_data into facial_data for specified dimensions using additive blending.
-    The blending formula is:
-        final_value = base_value + alpha * animation_delta
+    Merges animation_data into facial_data for specified dimensions using blending.
+    
+    For each dimension:
+      - If the animation value is higher than the base value, blend them using:
+            final_value = (1 - alpha) * base_value + alpha * animation_value
+      - Otherwise, keep the original base_value.
+    
+    This ensures that if both values are the same (e.g., 0.5), the blended result is 0.5.
     The result is clamped between 0.0 and 1.0.
     """
     # Ensure the animation data matches the length of facial_data.
@@ -72,17 +77,25 @@ def merge_animation_data_into_facial_data(facial_data, animation_data, dimension
     # Copy the original facial data to avoid modifying it in place.
     blended_facial_data = [frame.copy() for frame in facial_data]
     
-    # Apply additive blending for each frame and specified dimension.
+    # Apply blending for each frame and specified dimension.
     for i in range(num_frames):
         for dim in dimensions:
             base_value = blended_facial_data[i][dim]
-            animation_delta = animation_data[i][dim]
-            blended_value = base_value + alpha * animation_delta
+            animation_value = animation_data[i][dim]
+            
+            # Only blend (i.e., potentially increase) if the animation value is higher than the base value.
+            if animation_value > base_value:
+                # Changed from additive blending to interpolation blending.
+                blended_value = (1 - alpha) * base_value + alpha * animation_value
+            else:
+                blended_value = base_value
+                
             # Clamp the value to [0.0, 1.0]
             blended_value = min(max(blended_value, 0.0), 1.0)
             blended_facial_data[i][dim] = blended_value
             
     return blended_facial_data
+
 
 
 # -------------------- Emotion Merging --------------------
