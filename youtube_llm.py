@@ -19,21 +19,22 @@ from livelink.animations.default_animation import default_animation_loop, stop_d
 from utils.tts.tts_bridge import tts_worker
 from utils.files.file_utils import initialize_directories
 from utils.llm.chat_utils import load_chat_history, save_chat_log
-from utils.llm.llm_utils import stream_llm_chunks 
+from utils.llm.llm_utils import stream_llm_chunks, warm_up_llm_connection
 from utils.audio_face_workers import audio_face_queue_worker
 from utils.stt.transcribe_whisper import transcribe_audio
 from utils.audio.record_audio import record_audio_until_release
 
-
 from utils.streamer_utils.youtube_utils import get_live_chat_id, run_youtube_chat_fetcher, youtube_input_worker
 
+# Configuration for LLM and audio
 USE_LOCAL_LLM = True     
 USE_STREAMING = True   
 LLM_API_URL = "http://127.0.0.1:5050/generate_llama"
 LLM_STREAM_URL = "http://127.0.0.1:5050/generate_stream"
 VOICE_NAME = 'Lily'
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")  
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY","PUT_KEY_HERE")  # new apikey format for new openai package
 USE_LOCAL_AUDIO = True 
+USE_COMBINED_ENDPOINT = False
 
 llm_config = {
     "USE_LOCAL_LLM": USE_LOCAL_LLM,
@@ -52,6 +53,7 @@ def flush_queue(q):
     except Empty:
         pass
 
+
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY", "")
 YOUTUBE_LIVE_CHAT_ID = os.getenv("YOUTUBE_LIVE_CHAT_ID", "")
 YOUTUBE_VIDEO_ID = os.getenv("YOUTUBE_VIDEO_ID", "")
@@ -63,14 +65,23 @@ def main():
     socket_connection = create_socket_connection()
     chat_history = load_chat_history()
     
+    # Warm-up the LLM connection to avoid delay on the first request.
+    warm_up_llm_connection(llm_config)
+    
     default_animation_thread = Thread(target=default_animation_loop, args=(py_face,))
     default_animation_thread.start()
     
     chunk_queue = Queue()
     audio_queue = Queue()
-    tts_worker_thread = Thread(target=tts_worker, args=(chunk_queue, audio_queue, USE_LOCAL_AUDIO, VOICE_NAME))
+    tts_worker_thread = Thread(
+        target=tts_worker, 
+        args=(chunk_queue, audio_queue, USE_LOCAL_AUDIO, VOICE_NAME, USE_COMBINED_ENDPOINT)
+    )
     tts_worker_thread.start()
-    audio_worker_thread = Thread(target=audio_face_queue_worker, args=(audio_queue, py_face, socket_connection, default_animation_thread))
+    audio_worker_thread = Thread(
+        target=audio_face_queue_worker, 
+        args=(audio_queue, py_face, socket_connection, default_animation_thread)
+    )
     audio_worker_thread.start()
     
     global YOUTUBE_LIVE_CHAT_ID
@@ -88,18 +99,20 @@ def main():
     youtube_queue = Queue()  
     llm_lock = Lock()  
     
-    youtube_fetcher_thread = Thread(target=run_youtube_chat_fetcher, args=(youtube_queue, YOUTUBE_API_KEY, YOUTUBE_LIVE_CHAT_ID))
+    youtube_fetcher_thread = Thread(
+        target=run_youtube_chat_fetcher, 
+        args=(youtube_queue, YOUTUBE_API_KEY, YOUTUBE_LIVE_CHAT_ID)
+    )
     youtube_fetcher_thread.daemon = True
     youtube_fetcher_thread.start()
     
     youtube_worker_thread = Thread(
         target=youtube_input_worker, 
-        args=(youtube_queue, chat_history, chunk_queue, llm_lock, llm_config)  
+        args=(youtube_queue, chat_history, chunk_queue, llm_lock, llm_config)
     )
     youtube_worker_thread.daemon = True
     youtube_worker_thread.start()
 
-    
     mode = ""
     while mode not in ['t', 'r']:
         mode = input("Choose input mode: type 't' for text input or 'r' for push-to-talk recording (or 'q' to quit): ").strip().lower()
