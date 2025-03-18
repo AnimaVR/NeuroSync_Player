@@ -99,6 +99,7 @@ def main():
     # ----------------------------------------------------
     # WARM UP THE LLM CONNECTION BEFORE ENTERING MAIN LOOP
     # ----------------------------------------------------
+    print("Warming up, please wait..")
     warm_up_llm_connection(llm_config)
     
     default_animation_thread = Thread(target=default_animation_loop, args=(py_face,))
