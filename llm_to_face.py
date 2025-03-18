@@ -21,7 +21,7 @@ from livelink.animations.default_animation import default_animation_loop, stop_d
 
 from utils.tts.tts_bridge import tts_worker
 from utils.files.file_utils import initialize_directories
-from utils.llm.llm_utils import stream_llm_chunks 
+from utils.llm.llm_utils import stream_llm_chunks, warm_up_llm_connection 
 from utils.audio_face_workers import audio_face_queue_worker
 from utils.stt.transcribe_whisper import transcribe_audio
 from utils.audio.record_audio import record_audio_until_release
@@ -52,35 +52,6 @@ llm_config = {
     "max_chunk_length": 500,
     "flush_token_count": 300
 }
-
-# ----------------------------------------------------
-# Warm-up Function to Pre-establish the Connection
-# ----------------------------------------------------
-def warm_up_llm_connection(config):
-    """
-    Perform a lightweight dummy request to warm up the LLM connection.
-    This avoids the initial delay when the user sends the first real request.
-    """
-    if config["USE_LOCAL_LLM"]:
-        try:
-            # For local LLM, use a dummy ping request with a short timeout.
-            requests.post(config["LLM_STREAM_URL"], json={"dummy": "ping"}, timeout=1)
-            print("Local LLM connection warmed up.")
-        except Exception as e:
-            print("Local LLM connection warm-up failed:", e)
-    else:
-        try:
-            # For OpenAI API, send a lightweight ping message.
-            client = OpenAI(api_key=config["OPENAI_API_KEY"])
-            client.chat.completions.create(
-                model="gpt-4o",
-                messages=[{"role": "system", "content": "ping"}],
-                max_tokens=1,
-                stream=False
-            )
-            print("OpenAI API connection warmed up.")
-        except Exception as e:
-            print("OpenAI API connection warm-up failed:", e)
 
 def flush_queue(q):
     try:
