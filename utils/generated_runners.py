@@ -65,7 +65,7 @@ def run_audio_animation_from_bytes(audio_bytes, generated_facial_data, py_face, 
         
         facial_data_array = np.array(generated_facial_data)
         dominant_emotion = determine_highest_emotion(facial_data_array)
-        print(f"Dominant emotion: {dominant_emotion}")
+     #   print(f"Dominant emotion: {dominant_emotion}")
         if dominant_emotion in emotion_animations and len(emotion_animations[dominant_emotion]) > 0:
             selected_animation = random.choice(emotion_animations[dominant_emotion])
             generated_facial_data = merge_emotion_data_into_facial_data_wrapper(
@@ -111,7 +111,7 @@ def run_audio_animation(audio_path, generated_facial_data, py_face, socket_conne
         
         facial_data_array = np.array(generated_facial_data)
         dominant_emotion = determine_highest_emotion(facial_data_array)
-        print(f"Dominant emotion: {dominant_emotion}")
+     #   print(f"Dominant emotion: {dominant_emotion}")
         if dominant_emotion in emotion_animations and len(emotion_animations[dominant_emotion]) > 0:
             selected_animation = random.choice(emotion_animations[dominant_emotion])
             generated_facial_data = merge_emotion_data_into_facial_data_wrapper(generated_facial_data, selected_animation, alpha=0.7)
