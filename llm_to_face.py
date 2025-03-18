@@ -41,7 +41,7 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY","PUT_KEY_HERE")  # new apikey format
 
 VOICE_NAME = 'Lily'
 USE_LOCAL_AUDIO = True 
-USE_COMBINED_ENDPOINT = True
+USE_COMBINED_ENDPOINT = True # set false if NOT using the realtime api at  https://github.com/AnimaVR/NeuroSync_Real-Time_API
 
 llm_config = {
     "USE_LOCAL_LLM": USE_LOCAL_LLM,
