@@ -61,3 +61,13 @@ class EmoteConnect:
                 except Exception:
                     pass
                 cls._socket = None
+
+
+'''
+EmoteConnect.send_emote("Wave")
+
+# To send an emote on its own thread (non-blocking):
+thread = threading.Thread(target=EmoteConnect.send_emote, args=("Wave",))
+thread.start()
+
+'''
