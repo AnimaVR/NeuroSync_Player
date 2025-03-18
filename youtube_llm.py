@@ -2,17 +2,16 @@
 # youtube_llm.py
 import os
 import time
-from threading import Thread, Lock
-from queue import Queue, Empty
 import pygame
+import keyboard  
 import warnings
 warnings.filterwarnings(
     "ignore", 
     message="Couldn't find ffmpeg or avconv - defaulting to ffmpeg, but may not work"
 )
-
-import keyboard  
-import time      
+from threading import Thread, Lock
+from queue import Queue, Empty
+    
 
 from livelink.connect.livelink_init import create_socket_connection, initialize_py_face
 from livelink.animations.default_animation import default_animation_loop, stop_default_animation
