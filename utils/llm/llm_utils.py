@@ -5,6 +5,34 @@ import re
 import string
 from openai import OpenAI
 
+# ----------------------------------------------------
+# Warm-up Function to Pre-establish the Connection
+# ----------------------------------------------------
+def warm_up_llm_connection(config):
+    """
+    Perform a lightweight dummy request to warm up the LLM connection.
+    This avoids the initial delay when the user sends the first real request.
+    """
+    if config["USE_LOCAL_LLM"]:
+        try:
+            # For local LLM, use a dummy ping request with a short timeout.
+            requests.post(config["LLM_STREAM_URL"], json={"dummy": "ping"}, timeout=1)
+            print("Local LLM connection warmed up.")
+        except Exception as e:
+            print("Local LLM connection warm-up failed:", e)
+    else:
+        try:
+            # For OpenAI API, send a lightweight ping message.
+            client = OpenAI(api_key=config["OPENAI_API_KEY"])
+            client.chat.completions.create(
+                model="gpt-4o",
+                messages=[{"role": "system", "content": "ping"}],
+                max_tokens=1,
+                stream=False
+            )
+            print("OpenAI API connection warmed up.")
+        except Exception as e:
+            print("OpenAI API connection warm-up failed:", e)
 ##############################
 # UI Update Function
 ##############################
