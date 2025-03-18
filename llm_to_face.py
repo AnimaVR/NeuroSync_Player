@@ -13,6 +13,8 @@ warnings.filterwarnings(
 
 import keyboard  
 import time      
+import requests  # CHANGED: Needed for warm-up request
+from openai import OpenAI  # CHANGED: Needed for warm-up with OpenAI
 
 from livelink.connect.livelink_init import create_socket_connection, initialize_py_face
 from livelink.animations.default_animation import default_animation_loop, stop_default_animation
@@ -51,6 +53,35 @@ llm_config = {
     "flush_token_count": 300
 }
 
+# ----------------------------------------------------
+# Warm-up Function to Pre-establish the Connection
+# ----------------------------------------------------
+def warm_up_llm_connection(config):
+    """
+    Perform a lightweight dummy request to warm up the LLM connection.
+    This avoids the initial delay when the user sends the first real request.
+    """
+    if config["USE_LOCAL_LLM"]:
+        try:
+            # For local LLM, use a dummy ping request with a short timeout.
+            requests.post(config["LLM_STREAM_URL"], json={"dummy": "ping"}, timeout=1)
+            print("Local LLM connection warmed up.")
+        except Exception as e:
+            print("Local LLM connection warm-up failed:", e)
+    else:
+        try:
+            # For OpenAI API, send a lightweight ping message.
+            client = OpenAI(api_key=config["OPENAI_API_KEY"])
+            client.chat.completions.create(
+                model="gpt-4o",
+                messages=[{"role": "system", "content": "ping"}],
+                max_tokens=1,
+                stream=False
+            )
+            print("OpenAI API connection warmed up.")
+        except Exception as e:
+            print("OpenAI API connection warm-up failed:", e)
+
 def flush_queue(q):
     try:
         while True:
@@ -64,6 +95,12 @@ def main():
     socket_connection = create_socket_connection()
     full_history = load_full_chat_history()
     chat_history = build_rolling_history(full_history)
+    
+    # ----------------------------------------------------
+    # WARM UP THE LLM CONNECTION BEFORE ENTERING MAIN LOOP
+    # ----------------------------------------------------
+    warm_up_llm_connection(llm_config)
+    
     default_animation_thread = Thread(target=default_animation_loop, args=(py_face,))
     default_animation_thread.start()
     chunk_queue = Queue()
@@ -72,11 +109,10 @@ def main():
     tts_worker_thread.start()
     audio_worker_thread = Thread(target=audio_face_queue_worker, args=(audio_queue, py_face, socket_connection, default_animation_thread))
     audio_worker_thread.start()
+    
     mode = ""
     while mode not in ['t', 'r']:
-        mode = input(
-            "Choose input mode: 't' for text, 'r' for push-to-talk, 'q' to quit: "
-        ).strip().lower()
+        mode = input("Choose input mode: 't' for text, 'r' for push-to-talk, 'q' to quit: ").strip().lower()
         if mode == 'q':
             return
     try:
