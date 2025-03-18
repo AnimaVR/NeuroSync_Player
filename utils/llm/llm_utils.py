@@ -1,5 +1,4 @@
 import requests
-import openai
 from threading import Thread
 from queue import Queue
 import re
@@ -162,6 +161,8 @@ def clean_text_for_tts(text: str) -> str:
         all(char in string.punctuation or char.isspace() for char in clean_text)):
         return ""
     return clean_text
+
+
 ##############################
 # LLM Streaming Function
 ##############################
@@ -253,22 +254,27 @@ def stream_llm_chunks(user_input, chat_history, chunk_queue, config):
                 return "Error: Exception occurred."
     
     else:
-        # Using OpenAI's API
+        # Using OpenAI's API with the new SDK (v1.0.0+)
         try:
-            openai.api_key = config["OPENAI_API_KEY"]
+            # Instantiate the client using the new OpenAI SDK
+            from openai import OpenAI
+            client = OpenAI(api_key=config["OPENAI_API_KEY"])
+            
             if USE_STREAMING:
-                response = openai.ChatCompletion.create(
-                    model="gpt-4",
+                response = client.chat.completions.create(
+                    model="gpt-4o",
                     messages=messages,
                     max_tokens=4000,
                     temperature=1,
                     top_p=0.9,
-                    stream=True
+                    stream=True  # Ensure streaming is enabled
                 )
                 print("Assistant Response (OpenAI streaming):\n", flush=True)
     
+                # Process each streamed token exactly as in the local API branch
                 for chunk in response:
-                    token = chunk["choices"][0].get("delta", {}).get("content", "")
+                    # Extract token using attribute access from the Pydantic model
+                    token = chunk.choices[0].delta.content if chunk.choices[0].delta else ""
                     if not token:
                         continue
                     full_response += token
@@ -280,14 +286,15 @@ def stream_llm_chunks(user_input, chat_history, chunk_queue, config):
                 return full_response.strip()
     
             else:
-                response = openai.ChatCompletion.create(
-                    model="gpt-4",
+                response = client.chat.completions.create(
+                    model="gpt-4o",
                     messages=messages,
                     max_tokens=4000,
                     temperature=1,
                     top_p=0.9
                 )
-                text = response["choices"][0]["message"]["content"]
+                # Access the message content using attributes
+                text = response.choices[0].message.content
                 
                 print("Assistant Response (OpenAI non-streaming):\n", flush=True)
                 tokens = text.split(' ')
