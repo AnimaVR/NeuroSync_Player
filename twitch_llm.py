@@ -43,7 +43,8 @@ llm_config = {
     "LLM_STREAM_URL": LLM_STREAM_URL, 
     "OPENAI_API_KEY": OPENAI_API_KEY, 
     "max_chunk_length": 500, 
-    "flush_token_count": 300
+    "flush_token_count": 300,
+    "system_message": "You are Mai, answer in short sentences."
 }
 
 
