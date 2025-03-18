@@ -4,6 +4,7 @@ from queue import Queue
 import re
 import string
 from openai import OpenAI
+
 ##############################
 # UI Update Function
 ##############################
@@ -203,23 +204,24 @@ def stream_llm_chunks(user_input, chat_history, chunk_queue, config):
     if USE_LOCAL_LLM:
         if USE_STREAMING:
             try:
-                with requests.post(config["LLM_STREAM_URL"], json=payload, stream=True) as response:
+                # CHANGED: Use a persistent session for local LLM streaming.
+                session = requests.Session()
+                with session.post(config["LLM_STREAM_URL"], json=payload, stream=True) as response:
                     response.raise_for_status()
                     print("\n\nAssistant Response (streaming):\n", flush=True)
                     
-                    # Use iter_content with a small chunk size so we process tokens as soon as they are available.
+                    # Process tokens as soon as they are available.
                     for token in response.iter_content(chunk_size=1, decode_unicode=True):
                         if not token:
                             continue
                         full_response += token
-                        # Immediately update the UI on a token-by-token basis.
                         update_ui(token)
-                        # Enqueue token for sentence building.
                         token_queue.put(token)
-                    
-                    # Signal the SentenceBuilder thread that we are done.
-                    token_queue.put(None)
-                    sb_thread.join()
+                session.close()  # Close the session after use.
+                
+                # Signal the SentenceBuilder thread that we are done.
+                token_queue.put(None)
+                sb_thread.join()
     
             except Exception as e:
                 print(f"\nError during streaming LLM call: {e}")
@@ -228,9 +230,11 @@ def stream_llm_chunks(user_input, chat_history, chunk_queue, config):
             return full_response.strip()
     
         else:
-            # Non-streaming local LLM: process the full response text token-by-token.
             try:
-                response = requests.post(config["LLM_API_URL"], json=payload)
+                # CHANGED: Use a persistent session for non-streaming local LLM.
+                session = requests.Session()
+                response = session.post(config["LLM_API_URL"], json=payload)
+                session.close()
                 if response.ok:
                     result = response.json()
                     text = result.get('assistant', {}).get('content', "Error: No response.")
@@ -256,8 +260,6 @@ def stream_llm_chunks(user_input, chat_history, chunk_queue, config):
     else:
         # Using OpenAI's API with the new SDK (v1.0.0+)
         try:
-            # Instantiate the client using the new OpenAI SDK
-
             client = OpenAI(api_key=config["OPENAI_API_KEY"])
             
             if USE_STREAMING:
@@ -271,9 +273,7 @@ def stream_llm_chunks(user_input, chat_history, chunk_queue, config):
                 )
                 print("Assistant Response (OpenAI streaming):\n", flush=True)
     
-                # Process each streamed token exactly as in the local API branch
                 for chunk in response:
-                    # Extract token using attribute access from the Pydantic model
                     token = chunk.choices[0].delta.content if chunk.choices[0].delta else ""
                     if not token:
                         continue
@@ -293,7 +293,6 @@ def stream_llm_chunks(user_input, chat_history, chunk_queue, config):
                     temperature=1,
                     top_p=0.9
                 )
-                # Access the message content using attributes
                 text = response.choices[0].message.content
                 
                 print("Assistant Response (OpenAI non-streaming):\n", flush=True)
