@@ -3,7 +3,7 @@ from threading import Thread
 from queue import Queue
 import re
 import string
-
+from openai import OpenAI
 ##############################
 # UI Update Function
 ##############################
@@ -257,7 +257,7 @@ def stream_llm_chunks(user_input, chat_history, chunk_queue, config):
         # Using OpenAI's API with the new SDK (v1.0.0+)
         try:
             # Instantiate the client using the new OpenAI SDK
-            from openai import OpenAI
+
             client = OpenAI(api_key=config["OPENAI_API_KEY"])
             
             if USE_STREAMING:
