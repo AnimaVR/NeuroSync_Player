@@ -67,6 +67,7 @@ def main():
     chat_history = load_chat_history()
     
     # Warm-up the LLM connection to avoid delay on the first request.
+    print("Warming up, please wait..")
     warm_up_llm_connection(llm_config)
     
     default_animation_thread = Thread(target=default_animation_loop, args=(py_face,))
