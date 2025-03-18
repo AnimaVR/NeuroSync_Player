@@ -13,8 +13,6 @@ warnings.filterwarnings(
 
 import keyboard  
 import time      
-import requests  # CHANGED: Needed for warm-up request
-from openai import OpenAI  # CHANGED: Needed for warm-up with OpenAI
 
 from livelink.connect.livelink_init import create_socket_connection, initialize_py_face
 from livelink.animations.default_animation import default_animation_loop, stop_default_animation
