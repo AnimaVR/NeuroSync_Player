@@ -7,7 +7,7 @@
 import time
 import numpy as np
 
-from livelink.animations.default_animation import default_animation_data, FaceBlendShape
+from livelink.animations.default_animation import FaceBlendShape
 
 
 def play_full_animation(facial_data, fps, py_face, socket_connection, blend_in_frames, blend_out_frames):
@@ -16,35 +16,46 @@ def play_full_animation(facial_data, fps, py_face, socket_connection, blend_in_f
         socket_connection.sendall(py_face.encode())
         time.sleep(1 / fps)
 
-def apply_blendshapes(frame_data: np.ndarray, weight: float, py_face):
+def apply_blendshapes(frame_data: np.ndarray, weight: float, py_face, default_animation_data):
     for i in range(51):  # Apply the first 51 blendshapes (no neck at the moment)
         default_value = default_animation_data[0][i]
         facial_value = frame_data[i]
         blended_value = (1 - weight) * default_value + weight * facial_value
         py_face.set_blendshape(FaceBlendShape(i), float(blended_value))
-'''
-    # Handle new emotion dimensions (61 to 67)
-    additional_values = frame_data[61:68]
-    values_str = " ".join([f"{i+61}: {value:.2f}" for i, value in enumerate(additional_values)])
-    print(f"Frame Values: {values_str}")
 
-    # Determine the emotion with the highest value
-    max_emotion_index = np.argmax(additional_values)
-    emotions = ["Angry", "Disgusted", "Fearful", "Happy", "Neutral", "Sad", "Surprised"]
-    print(f"Highest emotion: {emotions[max_emotion_index]} with value: {additional_values[max_emotion_index]:.2f}")'''
-
-def blend_in(facial_data, fps, py_face, encoded_data, blend_in_frames):
+def blend_in(facial_data, fps, py_face, encoded_data, blend_in_frames, default_animation_data):
     for frame_index in range(blend_in_frames):
         weight = frame_index / blend_in_frames
-        apply_blendshapes(facial_data[frame_index], weight, py_face)
+        apply_blendshapes(facial_data[frame_index], weight, py_face, default_animation_data)
         encoded_data.append(py_face.encode())
         time.sleep(1 / fps)
 
-def blend_out(facial_data, fps, py_face, encoded_data, blend_out_frames):
+def blend_out(facial_data, fps, py_face, encoded_data, blend_out_frames, default_animation_data):
     for frame_index in range(blend_out_frames):
         weight = frame_index / blend_out_frames
         reverse_index = len(facial_data) - blend_out_frames + frame_index
-        apply_blendshapes(facial_data[reverse_index], 1.0 - weight, py_face)
+        apply_blendshapes(facial_data[reverse_index], 1.0 - weight, py_face, default_animation_data)
         encoded_data.append(py_face.encode())
         time.sleep(1 / fps)
 
+def blend_animation_start_end(data, blend_frames=8):
+    last_frames = data[-blend_frames:]
+    first_frames = data[:blend_frames]
+    blended_frames = np.zeros_like(last_frames)
+    for i in range(blend_frames):
+        alpha = i / blend_frames  # Linear blending factor
+        blended_frames[i] = (1 - alpha) * last_frames[i] + alpha * first_frames[i]
+
+    blended_data = np.vstack([data[:-blend_frames], blended_frames])
+    return blended_data
+
+def blend_animation_data_to_loop_by_dimension(animation_data, dimensions, blend_frame_count):
+    num_frames = len(animation_data)
+    for dim in dimensions:
+        for i in range(blend_frame_count):
+            blend_alpha = i / blend_frame_count
+            start_value = animation_data[i][dim]
+            end_value = animation_data[num_frames - blend_frame_count + i][dim]
+            blended_value = (1 - blend_alpha) * end_value + blend_alpha * start_value
+            animation_data[num_frames - blend_frame_count + i][dim] = blended_value
+    return animation_data
