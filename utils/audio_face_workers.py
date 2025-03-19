@@ -12,21 +12,32 @@ from utils.files.file_utils import save_generated_data_from_wav
 from utils.neurosync.neurosync_api_connect import send_audio_to_neurosync
 from utils.audio.play_audio import read_audio_file_as_bytes
 
+from utils.emote_sender.send_emote import EmoteConnect
+
 queue_lock = Lock()
 
-def audio_face_queue_worker(audio_face_queue, py_face, socket_connection, default_animation_thread):
-    """
-    Processes audio items from audio_queue sequentially.
-    Each item is a tuple (audio_bytes, facial_data) that is played back,
-    ensuring that the animations remain in sync.
-    """
+# send emote to unreal by setting true to enable emote calls
+def audio_face_queue_worker(audio_face_queue, py_face, socket_connection, default_animation_thread, enable_emote_calls=False):
+    speaking = False
+
     while True:
         item = audio_face_queue.get()
         if item is None:
+            audio_face_queue.task_done()
             break
+        
+        if not speaking and enable_emote_calls:
+            EmoteConnect.send_emote("startspeaking")
+            speaking = True
+            
         audio_bytes, facial_data = item
         run_audio_animation_from_bytes(audio_bytes, facial_data, py_face, socket_connection, default_animation_thread)
         audio_face_queue.task_done()
+
+        if speaking and audio_face_queue.empty() and enable_emote_calls:
+            EmoteConnect.send_emote("stopspeaking")
+            speaking = False
+    
 
 def process_wav_file(wav_file, py_face, socket_connection, default_animation_thread):
     """
