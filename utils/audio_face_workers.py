@@ -2,22 +2,18 @@
 # This software is licensed under a **dual-license model**
 # For individuals and businesses earning **under $1M per year**, this software is licensed under the **MIT License**
 # Businesses or organizations with **annual revenue of $1,000,000 or more** must obtain permission to use this software commercially.
+# utils/audio_workers.py
 
 import os
-import time
-from threading import Thread, Event, Lock
-from queue import Queue
+from threading import Lock
 
 from utils.generated_runners import run_audio_animation_from_bytes, run_audio_animation
-from livelink.animations.default_animation import default_animation_loop, stop_default_animation
-
 from utils.files.file_utils import save_generated_data_from_wav
 from utils.neurosync.neurosync_api_connect import send_audio_to_neurosync
 from utils.audio.play_audio import read_audio_file_as_bytes
 from utils.audio.convert_audio import bytes_to_wav
 
 queue_lock = Lock()
-
 
 def audio_face_queue_worker(audio_face_queue, py_face, socket_connection, default_animation_thread):
     """
@@ -106,3 +102,4 @@ def log_timing_worker(log_queue):
             print(log_entry)
         except Exception as e:
             print(f"Logging error: {e}")
+
