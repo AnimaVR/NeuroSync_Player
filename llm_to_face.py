@@ -13,6 +13,7 @@ warnings.filterwarnings(
 
 import keyboard  
 import time      
+from datetime import datetime, timezone 
 
 from livelink.connect.livelink_init import create_socket_connection, initialize_py_face
 from livelink.animations.default_animation import default_animation_loop, stop_default_animation
@@ -130,12 +131,16 @@ def main():
                 retrieval_embedding = get_embedding(user_input, use_openai=False)
                 # Retrieve top matching context from vector DB.
                 context_string = vector_db.get_context_string(retrieval_embedding, top_n=4)
-                # Update the system message with the retrieved context.
-                llm_config["system_message"] = BASE_SYSTEM_MESSAGE + context_string
+                # Get current GMT time.
+                current_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S GMT")
+                # Update the system message with the retrieved context and current time.
+                llm_config["system_message"] = (BASE_SYSTEM_MESSAGE + context_string + 
+                                                "\nThe current time and date is: " + current_time)
                 print(context_string)
             else:
                 # If vector DB is disabled, use the base system message.
-                llm_config["system_message"] = BASE_SYSTEM_MESSAGE
+                current_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S GMT")
+                llm_config["system_message"] = BASE_SYSTEM_MESSAGE + "\nThe current time and date is: " + current_time
 
             flush_queue(chunk_queue)
             flush_queue(audio_queue)
@@ -156,8 +161,12 @@ def main():
             # 3. After Receiving the Full Response, Add the Exchange to the Vector DB
             # ---------------------------------------------------------------
             if USE_VECTOR_DB:
-                # Combine user input and response into one text block.
-                combined_text = "user : " + user_input + "\n" + "you : " +  full_response
+                # Get current GMT time.
+                timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S GMT")
+                # Combine user input and response into one text block with timestamp.
+                combined_text = ("user : " + user_input + "\n" +
+                                 "you : " + full_response + "\n" +
+                                 "Timestamp: " + timestamp)
                 # Compute a new embedding for the combined text.
                 combined_embedding = get_embedding(combined_text, use_openai=False)
                 # Add the combined exchange to the vector DB for future context retrieval.
