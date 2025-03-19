@@ -3,7 +3,7 @@ import requests
 
 # Global flag to choose the embeddings provider.
 # Set to True to use OpenAI embeddings, or False to use local embeddings.
-USE_OPENAI = False  # <-- Change this flag as needed
+USE_OPENAI = False # If you set this to true, you need to change the embedding length to match openAI 1536 instead of 768 of the local version (or whatever you have as an embedding size)
 
 def get_embedding(text: str, use_openai: bool = USE_OPENAI, openai_api_key: str = None, local_server_url: str = "http://127.0.0.1:7070/get_embedding") -> list:
     """
