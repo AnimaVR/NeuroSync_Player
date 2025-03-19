@@ -6,24 +6,6 @@
 
 Includes code for various helpful AI endpoints (stt, tts, embedding, vision) to use with the player, or your own projects. Be mindful of licences for your use case.
 
-### **06/03/2025 Bug fixes + update to llm_to_face.py + added twitch_llm.py for connecting your llm to twitch**
-
-- Text to audio when using Elevenlabs was returning static. Bug left over from OpenAI realtime addition, fixed.
-- Realtime audio loading then needed correcting, temporary fix added.
-- Refactored everything to keep it in its own place. Some things are still messy and are a WIP.
-
-*Updates*
-
-- llm_to_face.py updated to add push to talk, with whisper integration (you need to supply your own api destination) for <1 sec responses from an LLM locally with animation and speech.
-      - this means we go voice in to voice + face animation out, if you have the GPU memory for Llama3, whisper, someTTS + neurosync + unreal project.
-      - its better/faster/cheaper than OpenAI realtime api by a long way.
-
-- Added Llama3.1 api samples to help you get started with LLM integration locally.
-
-- twitch_llm.py added to allow connection of llm powered metahuman to the chat so it can respond to its viewers.
-
-- youtube_llm.py added to allow connection of llm powered metahuman to the chat so it can respond to its viewers.
-
 ### **21/02/2025 Scaling UP! | New 228m parameter model + config added**
 
 A milestone has been hit and previous research has got us to a point where scaling the model up is now possible with much faster training and better quality overall.
