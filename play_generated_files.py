@@ -1,19 +1,15 @@
-# This software is licensed under a **dual-license model**
-# For individuals and businesses earning **under $1M per year**, this software is licensed under the **MIT License**
-# Businesses or organizations with **annual revenue of $1,000,000 or more** must obtain permission to use this software commercially.
-
 import pygame
 import warnings
 warnings.filterwarnings(
     "ignore", 
     message="Couldn't find ffmpeg or avconv - defaulting to ffmpeg, but may not work"
 )
-
 from threading import Thread
 from livelink.animations.default_animation import default_animation_loop, stop_default_animation
 from livelink.connect.livelink_init import create_socket_connection, initialize_py_face
-from utils.files.file_utils import list_generated_files, load_facial_data_from_csv
+from utils.files.file_utils import list_generated_files
 from utils.generated_runners import run_audio_animation
+from livelink.animations.animation_loader import load_animation
 
 py_face = initialize_py_face()
 socket_connection = create_socket_connection()
@@ -30,23 +26,19 @@ def main():
         print(f"{i + 1}: Audio: {audio_path}, Shapes: {shapes_path}")
         
     while True:
-        user_input = input("Enter the number of the file to play, or 'q' to quit: ").strip().lower()
-      #  print(f"DEBUG: {repr(user_input)}")
-        
+        user_input = input("Enter the number of the file to play, or 'q' to quit: ").strip().lower()       
         if user_input == 'q':
             break
-        
         try:
             index = int(user_input) - 1
         except ValueError as e:
             print("Invalid input. Please enter a number.")
             print("ValueError:", e)
-            continue
-        
+            continue 
         if 0 <= index < len(generated_files):
             audio_path, shapes_path = generated_files[index]
             try:
-                generated_facial_data = load_facial_data_from_csv(shapes_path)
+                generated_facial_data = load_animation(shapes_path)
             except Exception as e:
                 print("Error loading facial data:", e)
                 continue
