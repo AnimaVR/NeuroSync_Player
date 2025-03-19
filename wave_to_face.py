@@ -13,7 +13,8 @@ from threading import Thread
 
 from livelink.connect.livelink_init import create_socket_connection, initialize_py_face
 from livelink.animations.default_animation import default_animation_loop, stop_default_animation
-from utils.files.file_utils import  initialize_directories, ensure_wav_input_folder_exists, list_wav_files, process_wav_file
+from utils.files.file_utils import  initialize_directories, ensure_wav_input_folder_exists, list_wav_files
+from utils.audio_face_workers import process_wav_file
 
 if __name__ == "__main__":
     
