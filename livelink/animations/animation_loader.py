@@ -1,7 +1,17 @@
 import os
+import pandas as pd
+
+def load_animation(csv_path):
+    """
+    Loads the default animation CSV file
+    Returns the animation data as a NumPy array.
+    """
+    data = pd.read_csv(csv_path)
+    data = data.drop(columns=['Timecode', 'BlendshapeCount'])
+    return data.values
 
 def load_emotion_animations(folder_path, blend_frames=16):
-    from utils.files.file_utils import load_animation
+    
     from livelink.animations.blending_anims import blend_animation_start_end
     animations = []
     if not os.path.isdir(folder_path):
