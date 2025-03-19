@@ -4,7 +4,7 @@ import numpy as np
 import keyboard
 import soundfile as sf
 
-# for the best results, record in 88200 | we overide this for the openai realtime api to the correct input.
+# for the best results, record in 88200
 
 def record_audio_until_release(sr=88200):
     """Record audio from the default microphone until the right Ctrl key is released."""
