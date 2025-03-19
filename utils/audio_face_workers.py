@@ -77,18 +77,6 @@ def process_wav_file(wav_file, py_face, socket_connection, default_animation_thr
     print("Processing completed successfully.")  # << Added print
 
 
-def conversion_worker(conversion_queue, audio_queue, sample_rate, channels, sample_width):
-    while True:
-        audio_chunk = conversion_queue.get()
-        if audio_chunk is None:  
-            conversion_queue.task_done()
-            break
-
-        wav_audio = bytes_to_wav(audio_chunk, sample_rate, channels, sample_width)
-        facial_data = send_audio_to_neurosync(wav_audio.getvalue())
-
-        audio_queue.put((audio_chunk, facial_data))
-        conversion_queue.task_done()
 
 def log_timing_worker(log_queue):
     """
