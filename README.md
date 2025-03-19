@@ -39,8 +39,6 @@ Use a local llm or OpenAI api, just set the bool and add your key.
 
 The **NeuroSync Player** allows for real-time streaming of facial blendshapes into Unreal Engine 5 using LiveLink - enabling facial animation from audio input.
 
-![Alt text](/utils/neurosyncclose.jpg)
-
 ### Features:
 - Real-time facial animation
 - Integration with Unreal Engine 5 via LiveLink
