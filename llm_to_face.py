@@ -136,7 +136,7 @@ def main():
                 # Update the system message with the retrieved context and current time.
                 llm_config["system_message"] = (BASE_SYSTEM_MESSAGE + context_string + 
                                                 "\nThe current time and date is: " + current_time)
-                print(context_string)
+             #   print(context_string)
             else:
                 # If vector DB is disabled, use the base system message.
                 current_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S GMT")
