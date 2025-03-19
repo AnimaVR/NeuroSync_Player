@@ -9,7 +9,7 @@ It also supports audio conversion on the fly (e.g. raw PCM to WAV) where needed.
 import io
 import time
 import pygame
-from utils.audio.convert_audio import pcm_to_wav, convert_to_wav
+from utils.audio.convert_audio import convert_to_wav
 
 # --- Helper Functions ---
 
