@@ -166,7 +166,7 @@ def main():
                 # Combine user input and response into one text block with timestamp.
                 combined_text = ("user : " + user_input + "\n" +
                                  "you : " + full_response + "\n" +
-                                 "Timestamp: " + timestamp)
+                                 "Timestamp: " + timestamp) + "\n"
                 # Compute a new embedding for the combined text.
                 combined_embedding = get_embedding(combined_text, use_openai=False)
                 # Add the combined exchange to the vector DB for future context retrieval.
