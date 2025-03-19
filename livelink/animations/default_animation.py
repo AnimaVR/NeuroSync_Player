@@ -4,65 +4,54 @@
 
 import time
 import socket
-import numpy as np
 import pandas as pd
 from threading import Event
 
 from livelink.connect.livelink_init import FaceBlendShape, UDP_IP, UDP_PORT
+from livelink.animations.blending_anims import blend_animation_start_end
 
-ground_truth_path = r"livelink/animations/default_anim/default.csv"
-columns_to_drop = [
-    'TongueOut', 'HeadYaw', 'HeadPitch', 'HeadRoll',
-    'LeftEyeYaw', 'LeftEyePitch', 'LeftEyeRoll',
-    'RightEyeYaw', 'RightEyePitch', 'RightEyeRoll'
-]
-
-def load_default_animation(csv_path):
+def load_animation(csv_path):
+    """
+    Loads the default animation CSV file
+    Returns the animation data as a NumPy array.
+    """
     data = pd.read_csv(csv_path)
-    data = data.drop(columns=['Timecode', 'BlendshapeCount'] + columns_to_drop)
+    data = data.drop(columns=['Timecode', 'BlendshapeCount'])
     return data.values
+# ==================== DEFAULT ANIMATION SETUP ====================
 
-default_animation_data = load_default_animation(ground_truth_path)
+# Path to the default animation CSV file
+ground_truth_path = r"livelink/animations/default_anim/default.csv"
 
-def blend_animation(data, blend_frames=30):
+# Load the default animation data
+default_animation_data = load_animation(ground_truth_path)
 
-    last_frames = data[-blend_frames:]
-    first_frames = data[:blend_frames]
+# Create the blended default animation data
+blended_animation_data = blend_animation_start_end(default_animation_data, blend_frames=8)
 
-    blended_frames = np.zeros_like(last_frames)
-    for i in range(blend_frames):
-        alpha = i / blend_frames  # Linear blending factor
-        blended_frames[i] = (1 - alpha) * last_frames[i] + alpha * first_frames[i]
-
-    blended_data = np.vstack([data[:-blend_frames], blended_frames])
-    return blended_data
-
-blended_animation_data = blend_animation(default_animation_data, blend_frames=30)
-
+# Event to signal stopping of the default animation loop
 stop_default_animation = Event()
 
 def default_animation_loop(py_face):
+    """
+    Loops through the blended default animation data and sends it to the face.
+    Uses UDP to send the encoded blendshape data to the target endpoint.
+    """
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
         s.connect((UDP_IP, UDP_PORT))
         while not stop_default_animation.is_set():
             for frame in blended_animation_data:
-                # Check before processing each frame
                 if stop_default_animation.is_set():
                     break
-
-                # Apply the frame blendshapes
                 for i, value in enumerate(frame):
-                    py_face.set_blendshape(FaceBlendShape(i), float(value))
-                
-                # Send the frame
+                    py_face.set_blendshape(FaceBlendShape(i), float(value))            
                 try:
                     s.sendall(py_face.encode())
                 except Exception as e:
                     print(f"Error in default animation sending: {e}")
-                
-                # Instead of one long sleep, break it into short chunks
-                total_sleep = 1 / 60
-                sleep_interval = 0.005  # check every 5ms
+                total_sleep = 1 / 60 
+                sleep_interval = 0.005  
                 while total_sleep > 0 and not stop_default_animation.is_set():
                     time.sleep(min(sleep_interval, total_sleep))
                     total_sleep -= sleep_interval
+
