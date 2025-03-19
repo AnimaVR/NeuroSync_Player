@@ -1,7 +1,6 @@
 import socket
 
 class EmoteConnect:
-    # Define server address and port (like the C# constants)
     server_address = '127.0.0.1'
     server_port = 7777
 
@@ -17,15 +16,10 @@ class EmoteConnect:
             return
 
         try:
-            # Create a new socket for each connection (mirroring "using var client = new TcpClient();" in C#)
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
                 client.connect((cls.server_address, cls.server_port))
               #  print(f"Connected to UnrealEngine emote receiver {cls.server_address}:{cls.server_port}")
-
-                # Convert the emote name to bytes (UTF-8 encoded) after trimming whitespace
                 message_bytes = emote_name.strip().encode('utf-8')
-
-                # Send the emote (using sendall to ensure all data is sent)
                 client.sendall(message_bytes)
              #   print(f"Successfully sent emote: {emote_name}")
 
