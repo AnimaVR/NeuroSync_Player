@@ -114,10 +114,13 @@ class VectorDB:
         
         The returned format will be:
         
-        Relevant Context:
-        1. <text> (similarity: X.XXX)
-        2. <text> (similarity: X.XXX)
+        Related Memory:
+        <text> (similarity: X.XXX)
+        <text> (similarity: X.XXX)
         ...
+        
+        Additionally, the string is ensured to be no longer than 4000 characters.
+        If it exceeds the limit, the least similar entries are dropped until it fits.
         
         Args:
             query_embedding (list): The query embedding.
@@ -129,12 +132,24 @@ class VectorDB:
         results = self.search(query_embedding, top_n)
         if not results:
             return ""
+        # Start with a header.
         lines = ["\n\nRelated Memory:"]
+        # Append each result.
         for i, result in enumerate(results, start=1):
             text = result["entry"].get("text", "")
             similarity = result["similarity"]
             lines.append(f"{text} (similarity: {similarity:.3f})")
-        return "\n".join(lines)
+        
+        # Join lines to form the context string.
+        context_str = "\n".join(lines)
+        
+        # If it exceeds the limit, remove the least similar entries (from the bottom) until it fits.
+        while len(context_str) > 4000 and len(lines) > 1:
+            # Remove the last entry (lowest similarity) before recalculating the context string.
+            lines.pop()
+            context_str = "\n".join(lines)
+        
+        return context_str
 
 # Create a global instance for convenience.
 vector_db = VectorDB()
