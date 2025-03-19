@@ -24,6 +24,9 @@ from utils.audio_face_workers import audio_face_queue_worker
 from utils.stt.transcribe_whisper import transcribe_audio
 from utils.audio.record_audio import record_audio_until_release
 
+from utils.vector_db.get_embedding import get_embedding
+from utils.vector_db.vector_db import vector_db
+
 from utils.llm.chat_utils import (
     load_full_chat_history,
     save_full_chat_history,
@@ -41,6 +44,14 @@ VOICE_NAME = 'Lily' # only for elevenlabs
 USE_LOCAL_AUDIO = True 
 USE_COMBINED_ENDPOINT = True # set false if NOT using the realtime api at  https://github.com/AnimaVR/NeuroSync_Real-Time_API
 
+# -------------------------------------------------------------------
+# Toggle this flag to enable or disable vector DB and embedding logic.
+USE_VECTOR_DB = False
+# -------------------------------------------------------------------
+
+# Base system message (will be extended with context)
+BASE_SYSTEM_MESSAGE = "You are Mai, do whatever you are told to do.\n\n"
+
 llm_config = {
     "USE_LOCAL_LLM": USE_LOCAL_LLM,
     "USE_STREAMING": USE_STREAMING,
@@ -49,8 +60,11 @@ llm_config = {
     "OPENAI_API_KEY": OPENAI_API_KEY,
     "max_chunk_length": 500,
     "flush_token_count": 300,
-    "system_message": "You are Mai, answer in short sentences."
+    # The system_message will be updated before each LLM call.
+    "system_message": BASE_SYSTEM_MESSAGE
 }
+
+
 
 
 def flush_queue(q):
@@ -59,6 +73,7 @@ def flush_queue(q):
             q.get_nowait()
     except Empty:
         pass
+
 
 def main():
     initialize_directories()
@@ -70,7 +85,6 @@ def main():
     # ----------------------------------------------------
     # WARM UP THE LLM CONNECTION BEFORE ENTERING MAIN LOOP
     # ----------------------------------------------------
-    print("Warming up, please wait..")
     warm_up_llm_connection(llm_config)
     
     default_animation_thread = Thread(target=default_animation_loop, args=(py_face,))
@@ -107,10 +121,29 @@ def main():
                 user_input = input("\n\nEnter text (or 'q' to quit): ").strip()
                 if user_input.lower() == 'q':
                     break
+
+            # ---------------------------------------------------------------
+            # 1. Retrieve Relevant Context (if vector DB is enabled)
+            # ---------------------------------------------------------------
+            if USE_VECTOR_DB:
+                # Compute embedding for retrieval using the user input only.
+                retrieval_embedding = get_embedding(user_input, use_openai=False)
+                # Retrieve top matching context from vector DB.
+                context_string = vector_db.get_context_string(retrieval_embedding, top_n=4)
+                # Update the system message with the retrieved context.
+                llm_config["system_message"] = BASE_SYSTEM_MESSAGE + context_string
+                print(context_string)
+            else:
+                # If vector DB is disabled, use the base system message.
+                llm_config["system_message"] = BASE_SYSTEM_MESSAGE
+
             flush_queue(chunk_queue)
             flush_queue(audio_queue)
             if pygame.mixer.get_init():
                 pygame.mixer.stop()
+            # ---------------------------------------------------------------
+            # 2. Get the Full LLM Response
+            # ---------------------------------------------------------------
             full_response = stream_llm_chunks(user_input, chat_history, chunk_queue, config=llm_config)
             new_turn = {"input": user_input, "response": full_response}
             chat_history.append(new_turn)
@@ -118,6 +151,17 @@ def main():
             save_full_chat_history(full_history)
             chat_history = build_rolling_history(full_history)
             save_rolling_history(chat_history)
+
+            # ---------------------------------------------------------------
+            # 3. After Receiving the Full Response, Add the Exchange to the Vector DB
+            # ---------------------------------------------------------------
+            if USE_VECTOR_DB:
+                # Combine user input and response into one text block.
+                combined_text = "user : " + user_input + "\n" + "you : " +  full_response
+                # Compute a new embedding for the combined text.
+                combined_embedding = get_embedding(combined_text, use_openai=False)
+                # Add the combined exchange to the vector DB for future context retrieval.
+                vector_db.add_entry(combined_embedding, combined_text)
 
     finally:
         chunk_queue.join()
