@@ -73,31 +73,6 @@ def play_audio_bytes(audio_bytes, start_event, sync=True):
         print(f"Error in play_audio_bytes: {e}")
 
 
-def play_audio_from_memory_openai(audio_data, start_event, sync=True):
-    """
-    Play audio from memory with potential PCM-to-WAV conversion.
-    
-    If the audio data does not start with the WAV header ('RIFF'), assume
-    it is raw PCM and convert it.
-    """
-    try:
-        init_pygame_mixer()
-        if not audio_data.startswith(b'RIFF'):
-            # Convert raw PCM to WAV using default parameters.
-            audio_file = pcm_to_wav(audio_data, sample_rate=22050, channels=1, sample_width=2)
-        else:
-            audio_file = io.BytesIO(audio_data)
-        pygame.mixer.music.load(audio_file)
-        start_event.wait()
-        pygame.mixer.music.play()
-        if sync:
-            sync_playback_loop()
-        else:
-            simple_playback_loop()
-    except pygame.error as e:
-        print(f"Error in play_audio_from_memory_openai: {e}")
-
-
 def play_audio_from_memory(audio_data, start_event, sync=False):
     """
     Play audio from memory (assumes valid WAV bytes).
