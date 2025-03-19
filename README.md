@@ -54,6 +54,6 @@ To generate facial blendshapes from audio, you'll need the **NeuroSync audio-to-
 
 ### Switching Between Local and Non-Local API
 
-The player can connect to either the **local API** or the **alpha API** depending on your needs. To switch between the two, simply change the boolean value in the `utils/neurosync_api_connect.py` file:
+The player can connect to either the **local API** or the **alpha API** depending on your needs. To switch between the two, simply change the boolean value in the `utils/neurosync/neurosync_api_connect.py` file:
 
 Visit [neurosync.info](https://neurosync.info) to sign up for alpha access.
