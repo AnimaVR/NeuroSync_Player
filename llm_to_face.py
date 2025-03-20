@@ -73,16 +73,40 @@ def flush_queue(q):
     except Empty:
         pass
 
+def process_turn(user_input, chat_history, full_history, llm_config, chunk_queue, audio_queue, vector_db):
+    if USE_VECTOR_DB:
+        llm_config["system_message"] = update_system_message_with_context(
+            user_input, BASE_SYSTEM_MESSAGE, vector_db, top_n=4
+        )
+    else:
+        current_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S GMT")
+        llm_config["system_message"] = BASE_SYSTEM_MESSAGE + "\nThe current time and date is: " + current_time
+    flush_queue(chunk_queue)
+    flush_queue(audio_queue)
+    if pygame.mixer.get_init():
+        pygame.mixer.stop()
+
+    full_response = stream_llm_chunks(user_input, chat_history, chunk_queue, config=llm_config)
+
+    new_turn = {"input": user_input, "response": full_response}
+    chat_history.append(new_turn)
+    full_history.append(new_turn)
+    save_full_chat_history(full_history)
+    updated_chat_history = build_rolling_history(full_history)
+    save_rolling_history(updated_chat_history)
+
+    if USE_VECTOR_DB:
+        add_exchange_to_vector_db(user_input, full_response, vector_db)
+
+    return updated_chat_history 
+
+
 def main():
     initialize_directories()
     py_face = initialize_py_face()
     socket_connection = create_socket_connection()
     full_history = load_full_chat_history()
     chat_history = build_rolling_history(full_history)
-
-    # ----------------------------------------------------
-    # WARM UP THE LLM CONNECTION BEFORE ENTERING MAIN LOOP
-    # ----------------------------------------------------
     warm_up_llm_connection(llm_config)
     
     default_animation_thread = Thread(target=default_animation_loop, args=(py_face,))
@@ -99,6 +123,7 @@ def main():
         mode = input("Choose input mode: 't' for text, 'r' for push-to-talk, 'q' to quit: ").strip().lower()
         if mode == 'q':
             return
+
     try:
         while True:
             if mode == 'r':
@@ -120,32 +145,7 @@ def main():
                 if user_input.lower() == 'q':
                     break
 
-            if USE_VECTOR_DB:
-                llm_config["system_message"] = update_system_message_with_context(
-                    user_input, BASE_SYSTEM_MESSAGE, vector_db, top_n=4
-                )
-
-             #   print(context_string)
-            else:
-                current_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S GMT")
-                llm_config["system_message"] = BASE_SYSTEM_MESSAGE + "\nThe current time and date is: " + current_time
-
-            flush_queue(chunk_queue)
-            flush_queue(audio_queue)
-            if pygame.mixer.get_init():
-                pygame.mixer.stop()
-
-            full_response = stream_llm_chunks(user_input, chat_history, chunk_queue, config=llm_config)
-            new_turn = {"input": user_input, "response": full_response}
-            chat_history.append(new_turn)
-            full_history.append(new_turn)
-            save_full_chat_history(full_history)
-            chat_history = build_rolling_history(full_history)
-            save_rolling_history(chat_history)
-
-            if USE_VECTOR_DB:
-                add_exchange_to_vector_db(user_input, full_response, vector_db)
-
+            chat_history = process_turn(user_input, chat_history, full_history, llm_config, chunk_queue, audio_queue, vector_db)
 
     finally:
         chunk_queue.join()
@@ -161,3 +161,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
