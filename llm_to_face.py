@@ -138,7 +138,7 @@ def main():
                 if transcription:
                     user_input = transcription
                 else:
-                    print("Transcription failed. Please try again.")
+                    print("Transcription failed. Make sure you have a stt api and its correctly set in utils > stt > transcribe_whisper.py  Please try again.")
                     continue
             else:
                 user_input = input("\n\nEnter text (or 'q' to quit): ").strip()
