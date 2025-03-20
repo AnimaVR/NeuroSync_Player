@@ -1,7 +1,7 @@
 # utils/vector_db/vector_db_utils.py
 
 from datetime import datetime, timezone
-from utils.vector_db.get_embedding import get_embedding  # Re-use your existing embedding function
+from utils.vector_db.get_embedding import get_embedding 
 
 def update_system_message_with_context(user_input: str, base_system_message: str, vector_db, top_n: int = 4) -> str:
     """
