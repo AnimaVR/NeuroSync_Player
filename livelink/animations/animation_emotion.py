@@ -9,7 +9,7 @@ def determine_highest_emotion(facial_data, perform_calculation=True):
     
     emotion_data = facial_data[:, -7:]
     emotion_averages = np.sum(emotion_data, axis=0) / facial_data.shape[0]
-    neutral_weight = 0.6 # if emotion is always neutral, reduce this.
+    neutral_weight = 0.4 # if emotion is always neutral, reduce this.
     emotion_averages[4] *= neutral_weight
     
     emotion_labels = ["Angry", "Disgusted", "Fearful", "Happy", "Neutral", "Sad", "Surprised"]
