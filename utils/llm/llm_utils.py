@@ -6,10 +6,6 @@ from openai import OpenAI
 from utils.llm.sentence_builder import SentenceBuilder
 
 
-
-##############################
-# Warm-up Function to Pre-establish the Connection
-##############################
 def warm_up_llm_connection(config):
     """
     Perform a lightweight dummy request to warm up the LLM connection.
@@ -36,9 +32,7 @@ def warm_up_llm_connection(config):
         except Exception as e:
             print("OpenAI API connection warm-up failed:", e)
 
-##############################
-# UI Update Function
-##############################
+
 def update_ui(token: str):
     """
     Immediately update the UI with the token.
@@ -56,9 +50,6 @@ def update_ui(token: str):
                 print()
     else:
         print(token, end='', flush=True)
-
-
-
 
 
 def build_llm_payload(user_input, chat_history, config):
@@ -88,7 +79,7 @@ def build_llm_payload(user_input, chat_history, config):
     return payload
 
 
-def stream_local_llm_streaming(user_input, chat_history, chunk_queue, config):
+def local_llm_streaming(user_input, chat_history, chunk_queue, config):
     """
     Streams tokens from a local LLM using streaming.
     """
@@ -124,7 +115,7 @@ def stream_local_llm_streaming(user_input, chat_history, chunk_queue, config):
         print(f"\nError during streaming local LLM call: {e}")
         return "Error: Streaming LLM call failed."
 
-def stream_local_llm_non_streaming(user_input, chat_history, chunk_queue, config):
+def local_llm_non_streaming(user_input, chat_history, chunk_queue, config):
     """
     Calls a local LLM non-streaming endpoint and processes the entire response.
     """
@@ -167,7 +158,7 @@ def stream_local_llm_non_streaming(user_input, chat_history, chunk_queue, config
 
 
 
-def stream_openai_llm_streaming(user_input, chat_history, chunk_queue, config):
+def openai_llm_streaming(user_input, chat_history, chunk_queue, config):
     """
     Streams tokens from the OpenAI API.
     """
@@ -211,7 +202,7 @@ def stream_openai_llm_streaming(user_input, chat_history, chunk_queue, config):
 
 
 
-def stream_openai_llm_non_streaming(user_input, chat_history, chunk_queue, config):
+def openai_llm_non_streaming(user_input, chat_history, chunk_queue, config):
     """
     Calls the OpenAI API without streaming.
     """
@@ -263,12 +254,12 @@ def stream_llm_chunks(user_input, chat_history, chunk_queue, config):
     
     if USE_LOCAL_LLM:
         if USE_STREAMING:
-            return stream_local_llm_streaming(user_input, chat_history, chunk_queue, config)
+            return local_llm_streaming(user_input, chat_history, chunk_queue, config)
         else:
-            return stream_local_llm_non_streaming(user_input, chat_history, chunk_queue, config)
+            return local_llm_non_streaming(user_input, chat_history, chunk_queue, config)
     else:
         if USE_STREAMING:
-            return stream_openai_llm_streaming(user_input, chat_history, chunk_queue, config)
+            return openai_llm_streaming(user_input, chat_history, chunk_queue, config)
         else:
-            return stream_openai_llm_non_streaming(user_input, chat_history, chunk_queue, config)
+            return openai_llm_non_streaming(user_input, chat_history, chunk_queue, config)
 
