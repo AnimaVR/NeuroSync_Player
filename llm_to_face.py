@@ -25,8 +25,9 @@ from utils.audio_face_workers import audio_face_queue_worker
 from utils.stt.transcribe_whisper import transcribe_audio
 from utils.audio.record_audio import record_audio_until_release
 
-from utils.vector_db.get_embedding import get_embedding
 from utils.vector_db.vector_db import vector_db
+from utils.vector_db.vector_db_utils import update_system_message_with_context, add_exchange_to_vector_db
+
 
 from utils.llm.chat_utils import (
     load_full_chat_history,
@@ -65,9 +66,6 @@ llm_config = {
     "system_message": BASE_SYSTEM_MESSAGE
 }
 
-
-
-
 def flush_queue(q):
     try:
         while True:
@@ -75,14 +73,13 @@ def flush_queue(q):
     except Empty:
         pass
 
-
 def main():
     initialize_directories()
     py_face = initialize_py_face()
     socket_connection = create_socket_connection()
     full_history = load_full_chat_history()
     chat_history = build_rolling_history(full_history)
-    
+
     # ----------------------------------------------------
     # WARM UP THE LLM CONNECTION BEFORE ENTERING MAIN LOOP
     # ----------------------------------------------------
@@ -123,22 +120,13 @@ def main():
                 if user_input.lower() == 'q':
                     break
 
-            # ---------------------------------------------------------------
-            # 1. Retrieve Relevant Context (if vector DB is enabled)
-            # ---------------------------------------------------------------
             if USE_VECTOR_DB:
-                # Compute embedding for retrieval using the user input only.
-                retrieval_embedding = get_embedding(user_input, use_openai=False)
-                # Retrieve top matching context from vector DB.
-                context_string = vector_db.get_context_string(retrieval_embedding, top_n=4)
-                # Get current GMT time.
-                current_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S GMT")
-                # Update the system message with the retrieved context and current time.
-                llm_config["system_message"] = (BASE_SYSTEM_MESSAGE + context_string + 
-                                                "\nThe current time and date is: " + current_time)
+                llm_config["system_message"] = update_system_message_with_context(
+                    user_input, BASE_SYSTEM_MESSAGE, vector_db, top_n=4
+                )
+
              #   print(context_string)
             else:
-                # If vector DB is disabled, use the base system message.
                 current_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S GMT")
                 llm_config["system_message"] = BASE_SYSTEM_MESSAGE + "\nThe current time and date is: " + current_time
 
@@ -146,9 +134,7 @@ def main():
             flush_queue(audio_queue)
             if pygame.mixer.get_init():
                 pygame.mixer.stop()
-            # ---------------------------------------------------------------
-            # 2. Get the Full LLM Response
-            # ---------------------------------------------------------------
+
             full_response = stream_llm_chunks(user_input, chat_history, chunk_queue, config=llm_config)
             new_turn = {"input": user_input, "response": full_response}
             chat_history.append(new_turn)
@@ -157,20 +143,9 @@ def main():
             chat_history = build_rolling_history(full_history)
             save_rolling_history(chat_history)
 
-            # ---------------------------------------------------------------
-            # 3. After Receiving the Full Response, Add the Exchange to the Vector DB
-            # ---------------------------------------------------------------
             if USE_VECTOR_DB:
-                # Get current GMT time.
-                timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S GMT")
-                # Combine user input and response into one text block with timestamp.
-                combined_text = ("user : " + user_input + "\n" +
-                                 "you : " + full_response + "\n" +
-                                 "Timestamp: " + timestamp) + "\n"
-                # Compute a new embedding for the combined text.
-                combined_embedding = get_embedding(combined_text, use_openai=False)
-                # Add the combined exchange to the vector DB for future context retrieval.
-                vector_db.add_entry(combined_embedding, combined_text)
+                add_exchange_to_vector_db(user_input, full_response, vector_db)
+
 
     finally:
         chunk_queue.join()
