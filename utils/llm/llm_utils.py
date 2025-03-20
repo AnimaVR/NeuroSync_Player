@@ -3,7 +3,6 @@ from threading import Thread
 from queue import Queue
 from openai import OpenAI
 
-# Import the SentenceBuilder class and clean_text_for_tts from the new file.
 from utils.llm.sentence_builder import SentenceBuilder
 
 
