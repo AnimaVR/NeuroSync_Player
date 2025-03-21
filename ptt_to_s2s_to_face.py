@@ -22,7 +22,7 @@ from utils.emote_sender.send_emote import EmoteConnect
 use_speech_to_speech_elevenlabs = False 
 voice_name = 'Alice'
 
-ENABLE_EMOTE_CALLS = False
+ENABLE_EMOTE_CALLS = False  # Set to False to disable emote calls if you dont have something to receive them (try this https://github.com/AnimaVR/Unreal_Glory_Hole ). 
 
 if __name__ == "__main__":
 
