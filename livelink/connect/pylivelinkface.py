@@ -34,9 +34,11 @@ MOUTH_BLENDSHAPES = [
 EYE_BLENDSHAPES = [
     FaceBlendShape.EyeBlinkLeft, FaceBlendShape.EyeLookDownLeft, FaceBlendShape.EyeLookInLeft,
     FaceBlendShape.EyeLookOutLeft, FaceBlendShape.EyeLookUpLeft, FaceBlendShape.EyeSquintLeft,
-    FaceBlendShape.EyeWideLeft, FaceBlendShape.EyeBlinkRight, FaceBlendShape.EyeLookDownRight,
+    FaceBlendShape.EyeWideLeft,  # <-- Specific: EyeWideLeft
+    FaceBlendShape.EyeBlinkRight, FaceBlendShape.EyeLookDownRight,
     FaceBlendShape.EyeLookInRight, FaceBlendShape.EyeLookOutRight, FaceBlendShape.EyeLookUpRight,
-    FaceBlendShape.EyeSquintRight, FaceBlendShape.EyeWideRight
+    FaceBlendShape.EyeSquintRight,  # <-- Specific: EyeSquintRight
+    FaceBlendShape.EyeWideRight  # <-- Specific: EyeWideRight
 ]
 
 EYEBROW_BLENDSHAPES = [
@@ -44,28 +46,49 @@ EYEBROW_BLENDSHAPES = [
     FaceBlendShape.BrowOuterUpLeft, FaceBlendShape.BrowOuterUpRight
 ]
 
-def scale_blendshapes_by_section(blendshapes: List[float], mouth_scale: float, eye_scale: float, eyebrow_scale: float, threshold: float = 0.0) -> List[float]:
-        scaled_blendshapes = []
-        
-        for i, value in enumerate(blendshapes):
-            if value > threshold:
-                if i in [bs.value for bs in MOUTH_BLENDSHAPES]:
-                    scaled_value = value * mouth_scale
-                elif i in [bs.value for bs in EYE_BLENDSHAPES]:
-                    scaled_value = value * eye_scale
-                elif i in [bs.value for bs in EYEBROW_BLENDSHAPES]:
-                    scaled_value = value * eyebrow_scale
+def scale_blendshapes_by_section(
+    blendshapes: List[float],
+    mouth_scale: float,
+    eye_scale: float,
+    eyebrow_scale: float,
+    threshold: float = 0.0,
+    # NEW: Additional parameters for specific eye blendshapes
+    eyewide_left_scale: float = 1.0,
+    eyewide_right_scale: float = 1.0,
+    eyesquint_left_scale: float = 1.0,
+    eyesquint_right_scale: float = 1.0
+) -> List[float]:
+    scaled_blendshapes = []
+    
+    for i, value in enumerate(blendshapes):
+        if value > threshold:
+            if i in [bs.value for bs in MOUTH_BLENDSHAPES]:
+                scaled_value = value * mouth_scale
+            elif i in [bs.value for bs in EYE_BLENDSHAPES]:
+                # NEW: Check for specific eye blendshapes and apply separate scaling
+                if i == FaceBlendShape.EyeWideLeft.value:
+                    scaled_value = value * eyewide_left_scale
+                elif i == FaceBlendShape.EyeWideRight.value:
+                    scaled_value = value * eyewide_right_scale
+                elif i == FaceBlendShape.EyeSquintLeft.value:
+                    scaled_value = value * eyesquint_left_scale
+                elif i == FaceBlendShape.EyeSquintRight.value:
+                    scaled_value = value * eyesquint_right_scale
                 else:
-                    scaled_value = value  # No scaling for unclassified blendshapes
-                
-                # Ensure scaling stays within valid range (0.0 to 1.0)
-                if scaled_value > 1.0:
-                    scaled_value = 1.0
-                scaled_blendshapes.append(max(scaled_value, 0.0))  # Ensure non-negative
+                    scaled_value = value * eye_scale  # default eye scaling for other eye blendshapes
+            elif i in [bs.value for bs in EYEBROW_BLENDSHAPES]:
+                scaled_value = value * eyebrow_scale
             else:
-                scaled_blendshapes.append(max(value, 0.0))  # Ensure non-negative
-        
-        return scaled_blendshapes
+                scaled_value = value  # No scaling for unclassified blendshapes
+            
+            # Ensure scaling stays within valid range (0.0 to 1.0)
+            if scaled_value > 1.0:
+                scaled_value = 1.0
+            scaled_blendshapes.append(max(scaled_value, 0.0))  # Ensure non-negative
+        else:
+            scaled_blendshapes.append(max(value, 0.0))  # Ensure non-negative
+    
+    return scaled_blendshapes
 
 
 class PyLiveLinkFace:
@@ -76,9 +99,15 @@ class PyLiveLinkFace:
         self._filter_size = filter_size
         self._version = 6
         
-        self._scaling_factor_mouth = 1.1
+        self._scaling_factor_mouth = 1.0
         self._scaling_factor_eyes = 1.0
-        self._scaling_factor_eyebrows = 0.4
+        self._scaling_factor_eyebrows = 0.6
+
+        # NEW: Separate scalars for specific eye blendshapes
+        self._scaling_factor_eyewide_left = 0.6
+        self._scaling_factor_eyewide_right = 0.6
+        self._scaling_factor_eyesquint_left = 1.0
+        self._scaling_factor_eyesquint_right = 1.0
 
         now = datetime.datetime.now()
         timcode = Timecode(self.fps, f'{now.hour}:{now.minute}:{now.second}:{now.microsecond * 0.001}')
@@ -98,8 +127,17 @@ class PyLiveLinkFace:
         frames_packed = struct.pack("!II", timcode.frames, self._sub_frame)
         frame_rate_packed = struct.pack("!II", self.fps, self._denominator)
     
-        # Apply different scaling factors for sections
-        scaled_blend_shapes = scale_blendshapes_by_section(self._blend_shapes, self._scaling_factor_mouth, self._scaling_factor_eyes, self._scaling_factor_eyebrows)
+        # NEW: Pass the new eye blendshape scaling factors into the scaling function
+        scaled_blend_shapes = scale_blendshapes_by_section(
+            self._blend_shapes,
+            self._scaling_factor_mouth,
+            self._scaling_factor_eyes,
+            self._scaling_factor_eyebrows,
+            eyewide_left_scale=self._scaling_factor_eyewide_left,
+            eyewide_right_scale=self._scaling_factor_eyewide_right,
+            eyesquint_left_scale=self._scaling_factor_eyesquint_left,
+            eyesquint_right_scale=self._scaling_factor_eyesquint_right
+        )
     
         data_packed = struct.pack('!B61f', 61, *scaled_blend_shapes)
         return version_packed + uuid_packed + name_length_packed + name_packed + frames_packed + frame_rate_packed + data_packed
@@ -114,7 +152,6 @@ class PyLiveLinkFace:
             self._old_blend_shapes[index.value].append(value)
             self._blend_shapes[index.value] = mean(self._old_blend_shapes[index.value])
 
-    
     def set_scaling_factor_mouth(self, scaling_factor: float) -> None:
         self._scaling_factor_mouth = scaling_factor
 
@@ -124,6 +161,19 @@ class PyLiveLinkFace:
     def set_scaling_factor_eyebrows(self, scaling_factor: float) -> None:
         self._scaling_factor_eyebrows = scaling_factor
 
+    # NEW: Setter methods for separate eye blendshape scaling factors
+    def set_scaling_factor_eyewide_left(self, scaling_factor: float) -> None:
+        self._scaling_factor_eyewide_left = scaling_factor
+
+    def set_scaling_factor_eyewide_right(self, scaling_factor: float) -> None:
+        self._scaling_factor_eyewide_right = scaling_factor
+
+    def set_scaling_factor_eyesquint_left(self, scaling_factor: float) -> None:
+        self._scaling_factor_eyesquint_left = scaling_factor
+
+    def set_scaling_factor_eyesquint_right(self, scaling_factor: float) -> None:
+        self._scaling_factor_eyesquint_right = scaling_factor
+
     def random_blink_intervals(self, duration=60, min_interval=1.0, max_interval=5.0):
         intervals = []
         current_time = 0.0
@@ -132,3 +182,4 @@ class PyLiveLinkFace:
             intervals.append(current_time + blink_interval)
             current_time += blink_interval
         return intervals
+
