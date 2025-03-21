@@ -13,8 +13,12 @@ from threading import Thread
 
 from livelink.connect.livelink_init import create_socket_connection, initialize_py_face
 from livelink.animations.default_animation import default_animation_loop, stop_default_animation
-from utils.files.file_utils import  initialize_directories, ensure_wav_input_folder_exists, list_wav_files
+from utils.files.file_utils import initialize_directories, ensure_wav_input_folder_exists, list_wav_files
 from utils.audio_face_workers import process_wav_file
+
+from utils.emote_sender.send_emote import EmoteConnect
+
+ENABLE_EMOTE_CALLS = False  # Set to False to disable emote calls if you dont have something to receive them (try this https://github.com/AnimaVR/Unreal_Glory_Hole ). 
 
 if __name__ == "__main__":
     
@@ -42,9 +46,17 @@ if __name__ == "__main__":
                 file_index = int(user_choice) - 1
                 if 0 <= file_index < len(wav_files):
                     selected_file = os.path.join(wav_input_folder, wav_files[file_index])
-                    process_wav_file(selected_file, py_face, socket_connection, default_animation_thread)
+                
+                    if ENABLE_EMOTE_CALLS:
+                        EmoteConnect.send_emote("startspeaking")
+                    
+                    try:
+                        process_wav_file(selected_file, py_face, socket_connection, default_animation_thread)
+                    finally:
+                        if ENABLE_EMOTE_CALLS:
+                            EmoteConnect.send_emote("stopspeaking")
                 else:
-                    print("Invalid selection. Please choose1 a valid number from the list.")
+                    print("Invalid selection. Please choose a valid number from the list.")
             else:
                 print("Invalid input. Please enter a number or 'q' to quit.")
 
@@ -54,3 +66,4 @@ if __name__ == "__main__":
             default_animation_thread.join()
         pygame.quit()
         socket_connection.close()
+
