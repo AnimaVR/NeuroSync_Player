@@ -45,10 +45,11 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY","PUT_KEY_HERE")  # new apikey format
 VOICE_NAME = 'Lily' # only for elevenlabs
 USE_LOCAL_AUDIO = True 
 USE_COMBINED_ENDPOINT = True # set false if NOT using the realtime api at  https://github.com/AnimaVR/NeuroSync_Real-Time_API
+ENABLE_EMOTE_CALLS = False  # Set to False to disable emote calls if you dont have something to receive them (try this https://github.com/AnimaVR/Unreal_Glory_Hole ). 
 
 # -------------------------------------------------------------------
 # Toggle this flag to enable or disable vector DB and embedding logic.
-USE_VECTOR_DB = False
+USE_VECTOR_DB = False 
 # -------------------------------------------------------------------
 
 # Base system message (will be extended with context)
@@ -115,7 +116,7 @@ def main():
     audio_queue = Queue()
     tts_worker_thread = Thread(target=tts_worker, args=(chunk_queue, audio_queue, USE_LOCAL_AUDIO, VOICE_NAME, USE_COMBINED_ENDPOINT))
     tts_worker_thread.start()
-    audio_worker_thread = Thread(target=audio_face_queue_worker, args=(audio_queue, py_face, socket_connection, default_animation_thread))
+    audio_worker_thread = Thread(target=audio_face_queue_worker, args=(audio_queue, py_face, socket_connection, default_animation_thread, ENABLE_EMOTE_CALLS))
     audio_worker_thread.start()
     
     mode = ""
