@@ -27,7 +27,7 @@ ground_truth_path = r"livelink/animations/default_anim/default.csv"
 default_animation_data = load_animation(ground_truth_path)
 
 # Create the blended default animation data
-blended_animation_data = blend_animation_start_end(default_animation_data, blend_frames=8)
+default_animation_data = blend_animation_start_end(default_animation_data, blend_frames=8)
 
 # Event to signal stopping of the default animation loop
 stop_default_animation = Event()
@@ -40,7 +40,7 @@ def default_animation_loop(py_face):
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
         s.connect((UDP_IP, UDP_PORT))
         while not stop_default_animation.is_set():
-            for frame in blended_animation_data:
+            for frame in default_animation_data:
                 if stop_default_animation.is_set():
                     break
                 for i, value in enumerate(frame):
