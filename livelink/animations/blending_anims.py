@@ -51,11 +51,15 @@ def blend_animation_start_end(data, blend_frames=8):
 
 def blend_animation_data_to_loop_by_dimension(animation_data, dimensions, blend_frame_count):
     num_frames = len(animation_data)
+
+    blend_frame_count = min(blend_frame_count, num_frames)
+    
     for dim in dimensions:
         for i in range(blend_frame_count):
             blend_alpha = i / blend_frame_count
-            start_value = animation_data[i][dim]
-            end_value = animation_data[num_frames - blend_frame_count + i][dim]
+            start_value = animation_data[i][dim]  
+            end_index = num_frames - blend_frame_count + i
+            end_value = animation_data[end_index][dim]
             blended_value = (1 - blend_alpha) * end_value + blend_alpha * start_value
-            animation_data[num_frames - blend_frame_count + i][dim] = blended_value
+            animation_data[end_index][dim] = blended_value
     return animation_data
