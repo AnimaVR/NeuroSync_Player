@@ -28,7 +28,7 @@ def adjust_animation_data_length(facial_data, animation_data):
             extended.append(animation_data[i % animation_length])
         return extended
 
-def merge_animation_data_into_facial_data(facial_data, animation_data, dimensions, alpha=0.6, blend_frame_count=32):
+def merge_animation_data_into_facial_data(facial_data, animation_data, dimensions, alpha=0.6, blend_frame_count=16):
     animation_data = adjust_animation_data_length(facial_data, animation_data)
     animation_data = blend_animation_data_to_loop_by_dimension(animation_data, dimensions, blend_frame_count)
     
@@ -43,7 +43,7 @@ def merge_animation_data_into_facial_data(facial_data, animation_data, dimension
             
     return facial_data
 
-def merge_emotion_data_into_facial_data_wrapper(facial_data, emotion_animation_data, alpha=0.5, blend_frame_count=32):
+def merge_emotion_data_into_facial_data_wrapper(facial_data, emotion_animation_data, alpha=0.5, blend_frame_count=16):
 
     dimensions = [
         FaceBlendShape.BrowDownLeft.value,
