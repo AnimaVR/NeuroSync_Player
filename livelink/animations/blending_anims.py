@@ -4,6 +4,7 @@
 
 # blending_anims.py
 
+
 import time
 import numpy as np
 
@@ -38,7 +39,7 @@ def blend_out(facial_data, fps, py_face, encoded_data, blend_out_frames, default
         encoded_data.append(py_face.encode())
         time.sleep(1 / fps)
 
-def blend_animation_start_end(data, blend_frames=8):
+def blend_animation_start_end(data, blend_frames=16):
     last_frames = data[-blend_frames:]
     first_frames = data[:blend_frames]
     blended_frames = np.zeros_like(last_frames)
@@ -49,7 +50,8 @@ def blend_animation_start_end(data, blend_frames=8):
     blended_data = np.vstack([data[:-blend_frames], blended_frames])
     return blended_data
 
-def blend_animation_data_to_loop_by_dimension(animation_data, dimensions, blend_frame_count):
+def blend_animation_data_to_loop_by_dimension(animation_data, dimensions, blend_frame_count=16):
+
     num_frames = len(animation_data)
 
     blend_frame_count = min(blend_frame_count, num_frames)
@@ -63,3 +65,4 @@ def blend_animation_data_to_loop_by_dimension(animation_data, dimensions, blend_
             blended_value = (1 - blend_alpha) * end_value + blend_alpha * start_value
             animation_data[end_index][dim] = blended_value
     return animation_data
+
