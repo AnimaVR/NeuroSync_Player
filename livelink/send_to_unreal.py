@@ -24,53 +24,9 @@ def apply_blink_to_facial_data(facial_data: List, default_animation_data: List[L
             if blink_idx < len(frame):
                 frame[blink_idx] = default_animation_data[default_idx][blink_idx]
 
-def pre_encode_facial_data_without_blend(facial_data: List, py_face, fps: int = 60) -> List[bytes]:
-    apply_blink_to_facial_data(facial_data, default_animation_data)
-
-    encoded_data = []
-    for frame_data in facial_data:
-        for i in range(min(len(frame_data), 51)):
-            py_face.set_blendshape(FaceBlendShape(i), frame_data[i])
-        encoded_data.append(py_face.encode())
-
-    return encoded_data
-
-def pre_encode_facial_data_blend_out(facial_data: List, py_face, fps: int = 60) -> List[bytes]:
-    apply_blink_to_facial_data(facial_data, default_animation_data)
-
-    encoded_data = []
-    blend_in_frames = int(0.1 * fps)
-    blend_out_frames = int(0.3 * fps)
-    
-    set_blend = py_face.set_blendshape
-
-    for frame_index, frame_data in enumerate(facial_data[blend_in_frames:-blend_out_frames]):
-        for i, value in enumerate(frame_data[:51]):
-            set_blend(FaceBlendShape(i), value)
-        encoded_data.append(py_face.encode())
-    
-    blend_out(facial_data, fps, py_face, encoded_data, blend_out_frames, default_animation_data)
-    return encoded_data
-
-def pre_encode_facial_data_blend_in(facial_data: List, py_face, fps: int = 60) -> List[bytes]:
-    apply_blink_to_facial_data(facial_data, default_animation_data)
-
-    encoded_data = []
-    blend_in_frames = int(0.1 * fps)
-    blend_out_frames = int(0.3 * fps)
-    
-    set_blend = py_face.set_blendshape
-
-    blend_in(facial_data, fps, py_face, encoded_data, blend_in_frames, default_animation_data)
-
-    for frame_index, frame_data in enumerate(facial_data[blend_in_frames:-blend_out_frames]):
-        for i, value in enumerate(frame_data[:51]):
-            set_blend(FaceBlendShape(i), value)
-        encoded_data.append(py_face.encode())
-
-    return encoded_data
 
 def pre_encode_facial_data(facial_data: List, py_face, fps: int = 60) -> List[bytes]:
+    
     apply_blink_to_facial_data(facial_data, default_animation_data)
 
     encoded_data = []
