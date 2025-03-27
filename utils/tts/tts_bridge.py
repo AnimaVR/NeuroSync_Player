@@ -1,3 +1,7 @@
+# This software is licensed under a **dual-license model**
+# For individuals and businesses earning **under $1M per year**, this software is licensed under the **MIT License**
+# Businesses or organizations with **annual revenue of $1,000,000 or more** must obtain permission to use this software commercially.
+
 from utils.neurosync.multi_part_return import get_tts_with_blendshapes
 from utils.neurosync.neurosync_api_connect import send_audio_to_neurosync
 from utils.tts.local_tts import call_local_tts 
