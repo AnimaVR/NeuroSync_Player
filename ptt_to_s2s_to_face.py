@@ -15,7 +15,7 @@ from livelink.connect.livelink_init import create_socket_connection, initialize_
 from livelink.animations.default_animation import default_animation_loop, stop_default_animation
 from utils.tts.eleven_labs import get_speech_to_speech_audio
 from utils.audio.record_audio import record_audio_until_release
-from utils.generated_runners import run_audio_animation_from_bytes
+from utils.generated_runners import run_audio_animation
 from utils.files.file_utils import save_generated_data, initialize_directories
 from utils.neurosync.neurosync_api_connect import send_audio_to_neurosync
 from utils.stt.transcribe_whisper import transcribe_audio 
@@ -26,7 +26,7 @@ from utils.emote_sender.send_emote import EmoteConnect
 use_speech_to_speech_elevenlabs = False 
 voice_name = 'Alice'
 
-ENABLE_EMOTE_CALLS = False  # Set to False to disable emote calls if you dont have something to receive them (try this https://github.com/AnimaVR/Unreal_Glory_Hole ). 
+ENABLE_EMOTE_CALLS = False
 
 if __name__ == "__main__":
 
@@ -71,7 +71,7 @@ if __name__ == "__main__":
                         EmoteConnect.send_emote("startspeaking")
 
                     try:
-                        run_audio_animation_from_bytes(processed_audio_bytes, generated_facial_data, py_face, socket_connection, default_animation_thread)
+                        run_audio_animation(processed_audio_bytes, generated_facial_data, py_face, socket_connection, default_animation_thread)
                     finally:
                         if ENABLE_EMOTE_CALLS:
                             EmoteConnect.send_emote("stopspeaking")
