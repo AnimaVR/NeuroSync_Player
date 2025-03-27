@@ -18,7 +18,7 @@ from utils.audio_face_workers import process_wav_file
 
 from utils.emote_sender.send_emote import EmoteConnect
 
-ENABLE_EMOTE_CALLS = True
+ENABLE_EMOTE_CALLS = False
 
 if __name__ == "__main__":
     
