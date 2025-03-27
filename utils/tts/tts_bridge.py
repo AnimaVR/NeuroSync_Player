@@ -8,7 +8,7 @@ from utils.tts.local_tts import call_local_tts
 from utils.tts.eleven_labs import get_elevenlabs_audio
 import string
 
-def tts_worker(chunk_queue, audio_queue, USE_LOCAL_AUDIO=True, VOICE_NAME='Lily', USE_COMBINED_ENDPOINT=False):
+def tts_worker(chunk_queue, audio_queue, USE_LOCAL_AUDIO=True, VOICE_NAME=None, USE_COMBINED_ENDPOINT=False):
     """
     Processes text chunks from chunk_queue.
     
@@ -37,7 +37,7 @@ def tts_worker(chunk_queue, audio_queue, USE_LOCAL_AUDIO=True, VOICE_NAME='Lily'
 
         if USE_COMBINED_ENDPOINT:
             # Use the combined endpoint: one call returns both audio and blendshapes.
-            audio_bytes, blendshapes = get_tts_with_blendshapes(chunk)
+            audio_bytes, blendshapes = get_tts_with_blendshapes(chunk, VOICE_NAME)
             if audio_bytes and blendshapes:
                 audio_queue.put((audio_bytes, blendshapes))
             else:
