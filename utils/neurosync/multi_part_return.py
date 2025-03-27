@@ -5,8 +5,7 @@
 import json
 import requests
 
-# getting ready for a personal real-time server - generating in one go, rather than many for a single input.
-
+# URL for the new endpoint (adjust host/port as needed)
 NEW_TTS_ENDPOINT = "http://127.0.0.1:8000/synthesize_and_blendshapes"
 
 def parse_multipart_response(response):
@@ -55,12 +54,16 @@ def parse_multipart_response(response):
     
     return audio_bytes, blendshapes
 
-def get_tts_with_blendshapes(text):
+def get_tts_with_blendshapes(text, voice=None):
     """
-    Calls the new TTS endpoint with the given text.
+    Calls the new TTS endpoint with the given text and optional voice.
     Returns a tuple: (audio_bytes, blendshapes) if successful, else (None, None).
     """
     payload = {"text": text}
+    # NEW: Include 'voice' in payload if provided
+    if voice is not None:
+        payload["voice"] = voice
+
     try:
         response = requests.post(NEW_TTS_ENDPOINT, json=payload)
         response.raise_for_status()
