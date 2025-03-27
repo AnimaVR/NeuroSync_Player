@@ -17,8 +17,7 @@ from livelink.animations.animation_loader import load_animation
 
 from utils.emote_sender.send_emote import EmoteConnect 
 
-# Global variable to enable/disable emote calls.
-ENABLE_EMOTE_CALLS = False  # Set to False to disable emote calls if you dont have something to receive them (try this https://github.com/AnimaVR/Unreal_Glory_Hole ). 
+ENABLE_EMOTE_CALLS = False
 
 py_face = initialize_py_face()
 socket_connection = create_socket_connection()
@@ -32,8 +31,7 @@ def main():
         return
     print("Available generated files:")
     for i, (audio_path, shapes_path) in enumerate(generated_files):
-        print(f"{i + 1}: Audio: {audio_path}, Shapes: {shapes_path}")
-        
+        print(f"{i + 1}: Audio: {audio_path}, Shapes: {shapes_path}")        
     while True:
         user_input = input("Enter the number of the file to play, or 'q' to quit: ").strip().lower()       
         if user_input == 'q':
@@ -51,17 +49,13 @@ def main():
             except Exception as e:
                 print("Error loading facial data:", e)
                 continue
-            
-            # Send "startspeaking" emote before running the animation (if enabled)
             if ENABLE_EMOTE_CALLS:
-                EmoteConnect.send_emote("startspeaking")
-            
+                EmoteConnect.send_emote("startspeaking")          
             try:
                 run_audio_animation(audio_path, generated_facial_data, py_face, socket_connection, default_animation_thread)
             except Exception as e:
                 print("Error running audio animation:", e)
             finally:
-                # Send "stopspeaking" emote after running the animation (if enabled)
                 if ENABLE_EMOTE_CALLS:
                     EmoteConnect.send_emote("stopspeaking")
         else:
@@ -76,4 +70,6 @@ if __name__ == '__main__':
             default_animation_thread.join()
         pygame.quit()
         socket_connection.close()
+
+
 
