@@ -18,7 +18,7 @@ from utils.audio_face_workers import process_wav_file
 
 from utils.emote_sender.send_emote import EmoteConnect
 
-ENABLE_EMOTE_CALLS = False  # Set to False to disable emote calls if you dont have something to receive them (try this https://github.com/AnimaVR/Unreal_Glory_Hole ). 
+ENABLE_EMOTE_CALLS = True
 
 if __name__ == "__main__":
     
@@ -66,4 +66,3 @@ if __name__ == "__main__":
             default_animation_thread.join()
         pygame.quit()
         socket_connection.close()
-
