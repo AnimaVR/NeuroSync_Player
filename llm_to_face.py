@@ -10,49 +10,33 @@ warnings.filterwarnings(
     "ignore", 
     message="Couldn't find ffmpeg or avconv - defaulting to ffmpeg, but may not work"
 )
-
 import keyboard  
 import time      
 from datetime import datetime, timezone 
 
 from livelink.connect.livelink_init import create_socket_connection, initialize_py_face
 from livelink.animations.default_animation import default_animation_loop, stop_default_animation
-
 from utils.tts.tts_bridge import tts_worker
 from utils.files.file_utils import initialize_directories
-from utils.llm.llm_utils import stream_llm_chunks, warm_up_llm_connection 
+from utils.llm.llm_utils import stream_llm_chunks, warm_up_llm_connection
 from utils.audio_face_workers import audio_face_queue_worker
 from utils.stt.transcribe_whisper import transcribe_audio
 from utils.audio.record_audio import record_audio_until_release
-
+from utils.llm.chat_utils import load_full_chat_history, save_full_chat_history, build_rolling_history, save_rolling_history
 from utils.vector_db.vector_db import vector_db
 from utils.vector_db.vector_db_utils import update_system_message_with_context, add_exchange_to_vector_db
 
 
-from utils.llm.chat_utils import (
-    load_full_chat_history,
-    save_full_chat_history,
-    build_rolling_history,
-    save_rolling_history
-)
-
-USE_LOCAL_LLM = False     
+USE_LOCAL_LLM = True   
 USE_STREAMING = True   
 LLM_API_URL = "http://127.0.0.1:5050/generate_llama"
 LLM_STREAM_URL = "http://127.0.0.1:5050/generate_stream"
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY","PUT_KEY_HERE")  # new apikey format for new openai package
-
-VOICE_NAME = 'Lily' # only for elevenlabs
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY","YOUR-API-KEY")  
+VOICE_NAME = 'bf_isabella' #  bf_isabella
 USE_LOCAL_AUDIO = True 
-USE_COMBINED_ENDPOINT = True # set false if NOT using the realtime api at  https://github.com/AnimaVR/NeuroSync_Real-Time_API
-ENABLE_EMOTE_CALLS = False  # Set to False to disable emote calls if you dont have something to receive them (try this https://github.com/AnimaVR/Unreal_Glory_Hole ). 
-
-# -------------------------------------------------------------------
-# Toggle this flag to enable or disable vector DB and embedding logic.
-USE_VECTOR_DB = False 
-# -------------------------------------------------------------------
-
-# Base system message (will be extended with context)
+USE_COMBINED_ENDPOINT = False
+ENABLE_EMOTE_CALLS = False
+USE_VECTOR_DB = False
 BASE_SYSTEM_MESSAGE = "You are Mai, do whatever you are told to do.\n\n"
 
 llm_config = {
@@ -63,7 +47,6 @@ llm_config = {
     "OPENAI_API_KEY": OPENAI_API_KEY,
     "max_chunk_length": 500,
     "flush_token_count": 300,
-    # The system_message will be updated before each LLM call.
     "system_message": BASE_SYSTEM_MESSAGE
 }
 
@@ -76,14 +59,14 @@ def flush_queue(q):
 
 def process_turn(user_input, chat_history, full_history, llm_config, chunk_queue, audio_queue, vector_db):
     if USE_VECTOR_DB:
-        llm_config["system_message"] = update_system_message_with_context(
-            user_input, BASE_SYSTEM_MESSAGE, vector_db, top_n=4
-        )
+        llm_config["system_message"] = update_system_message_with_context(user_input, BASE_SYSTEM_MESSAGE, vector_db, top_n=4)
     else:
         current_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S GMT")
         llm_config["system_message"] = BASE_SYSTEM_MESSAGE + "\nThe current time and date is: " + current_time
+
     flush_queue(chunk_queue)
     flush_queue(audio_queue)
+
     if pygame.mixer.get_init():
         pygame.mixer.stop()
 
@@ -99,8 +82,7 @@ def process_turn(user_input, chat_history, full_history, llm_config, chunk_queue
     if USE_VECTOR_DB:
         add_exchange_to_vector_db(user_input, full_response, vector_db)
 
-    return updated_chat_history 
-
+    return updated_chat_history
 
 def main():
     initialize_directories()
@@ -108,6 +90,7 @@ def main():
     socket_connection = create_socket_connection()
     full_history = load_full_chat_history()
     chat_history = build_rolling_history(full_history)
+    
     warm_up_llm_connection(llm_config)
     
     default_animation_thread = Thread(target=default_animation_loop, args=(py_face,))
@@ -162,4 +145,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
