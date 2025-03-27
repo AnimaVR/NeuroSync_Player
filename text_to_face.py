@@ -11,7 +11,7 @@ warnings.filterwarnings(
     message="Couldn't find ffmpeg or avconv - defaulting to ffmpeg, but may not work"
 )
 from utils.files.file_utils import save_generated_data, initialize_directories
-from utils.generated_runners import run_audio_animation_from_bytes
+from utils.generated_runners import run_audio_animation
 from utils.neurosync.multi_part_return import get_tts_with_blendshapes
 from utils.neurosync.neurosync_api_connect import send_audio_to_neurosync
 from utils.tts.eleven_labs import get_elevenlabs_audio
@@ -21,12 +21,10 @@ from livelink.animations.default_animation import default_animation_loop, stop_d
 
 from utils.emote_sender.send_emote import EmoteConnect
 
-voice_name = 'Lily'
-use_elevenlabs = False  # For old functionality: select ElevenLabs or Local TTS
-use_combined_endpoint = True  # Only set this true if you have the combined realtime API with TTS + blendshape in one call.
-
-ENABLE_EMOTE_CALLS = False # Set to False to disable emote calls if you dont have something to receive them (try this https://github.com/AnimaVR/Unreal_Glory_Hole ). 
-
+voice_name = 'af_nicole' # bf_isabella
+use_elevenlabs = False  # select ElevenLabs or Local TTS
+use_combined_endpoint = False  # Only set this true if you have the combined realtime API with TTS + blendshape in one call.
+ENABLE_EMOTE_CALLS = False 
 
 if __name__ == "__main__":
     initialize_directories()
@@ -42,14 +40,14 @@ if __name__ == "__main__":
             elif text_input:
                 start_time = time.time() 
                 if use_combined_endpoint:
-                    audio_bytes, blendshapes = get_tts_with_blendshapes(text_input)
+                    audio_bytes, blendshapes = get_tts_with_blendshapes(text_input, voice_name)
                     if audio_bytes and blendshapes:
                         generation_time = time.time() - start_time  
                         print(f"Generation took {generation_time:.2f} seconds.")
                         if ENABLE_EMOTE_CALLS:
                             EmoteConnect.send_emote("startspeaking")
                         try:
-                            run_audio_animation_from_bytes(audio_bytes, blendshapes, py_face, socket_connection, default_animation_thread)
+                            run_audio_animation(audio_bytes, blendshapes, py_face, socket_connection, default_animation_thread)
                         finally:
                             if ENABLE_EMOTE_CALLS:
                                 EmoteConnect.send_emote("stopspeaking")
@@ -69,7 +67,7 @@ if __name__ == "__main__":
                             if ENABLE_EMOTE_CALLS:
                                 EmoteConnect.send_emote("startspeaking")
                             try:
-                                run_audio_animation_from_bytes(audio_bytes, generated_facial_data, py_face, socket_connection, default_animation_thread)
+                                run_audio_animation(audio_bytes, generated_facial_data, py_face, socket_connection, default_animation_thread)
                             finally:
                                 if ENABLE_EMOTE_CALLS:
                                     EmoteConnect.send_emote("stopspeaking")
