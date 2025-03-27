@@ -27,7 +27,7 @@ def run_audio_animation(audio_input, generated_facial_data, py_face, socket_conn
         
         facial_data_array = np.array(generated_facial_data)
         dominant_emotion = determine_highest_emotion(facial_data_array)
-        print(f"Dominant emotion: {dominant_emotion}")
+      #  print(f"Dominant emotion: {dominant_emotion}") # this isnt very accurate yet but can be used fo fire random emotion overlays additively.
 
         if dominant_emotion in emotion_animations and len(emotion_animations[dominant_emotion]) > 0:
             selected_animation = random.choice(emotion_animations[dominant_emotion])
