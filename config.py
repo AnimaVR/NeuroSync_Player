@@ -5,17 +5,17 @@ USE_LOCAL_LLM = True
 USE_STREAMING = True
 LLM_API_URL = "http://127.0.0.1:5050/generate_llama"
 LLM_STREAM_URL = "http://127.0.0.1:5050/generate_stream"
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "KEY-GOES-HERE")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "YOUR-KEY-GOES-HERE")
 
 MAX_CHUNK_LENGTH = 500
 FLUSH_TOKEN_COUNT = 300
 
 DEFAULT_VOICE_NAME = 'bf_isabella'
 USE_LOCAL_AUDIO = True
-USE_COMBINED_ENDPOINT = False
+USE_COMBINED_ENDPOINT = True
 
-ENABLE_EMOTE_CALLS = False
-USE_VECTOR_DB = False
+ENABLE_EMOTE_CALLS = True
+USE_VECTOR_DB = True
 
 
 BASE_SYSTEM_MESSAGE = "You are Mai, do whatever you are told to do.\n\n"
@@ -34,6 +34,44 @@ VOICE_SYSTEM_MESSAGES = {
 }
 # Initial voice index for toggling in the AI talkie script.
 INITIAL_VOICE_INDEX = 0
+
+# ---------------------------
+# Emote Sender Configuration (new)
+# ---------------------------
+EMOTE_SERVER_ADDRESS = "127.0.0.1"
+EMOTE_SERVER_PORT = 7777
+
+# ---------------------------
+# Transcription Server Configuration (new)
+# ---------------------------
+TRANSCRIPTION_SERVER_URL = "http://127.0.0.1:6969/transcribe"
+
+# ---------------------------
+# Embedding Configurations (new)
+# ---------------------------
+# Toggle between local embeddings and OpenAI embeddings.
+USE_OPENAI_EMBEDDING = False
+# Local embedding server URL:
+EMBEDDING_LOCAL_SERVER_URL = "http://127.0.0.1:7070/get_embedding"
+# OpenAI embedding model and size.
+EMBEDDING_OPENAI_MODEL = "text-embedding-3-small"
+LOCAL_EMBEDDING_SIZE = 768
+OPENAI_EMBEDDING_SIZE = 1536
+
+# ---------------------------
+# Neurosync API Configurations (new)
+# ---------------------------
+
+NEUROSYNC_LOCAL_URL = "http://127.0.0.1:6969/audio_to_blendshapes"
+
+# ---------------------------
+# TTS with Blendshapes Endpoint (new)
+# ---------------------------
+TTS_WITH_BLENDSHAPES_REALTIME_API = "http://127.0.0.1:8000/synthesize_and_blendshapes"
+
+### ignore these
+NEUROSYNC_API_KEY = "YOUR-NEUROSYNC-API-KEY" # ignore this 
+NEUROSYNC_REMOTE_URL = "https://api.neurosync.info/audio_to_blendshapes" #ignore this
 
 
 def get_llm_config(system_message=None):
