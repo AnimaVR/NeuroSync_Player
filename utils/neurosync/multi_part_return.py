@@ -1,12 +1,9 @@
 # This software is licensed under a **dual-license model**
 # For individuals and businesses earning **under $1M per year**, this software is licensed under the **MIT License**
 # Businesses or organizations with **annual revenue of $1,000,000 or more** must obtain permission to use this software commercially.
-
 import json
 import requests
-
-# URL for the new endpoint (adjust host/port as needed)
-NEW_TTS_ENDPOINT = "http://127.0.0.1:8000/synthesize_and_blendshapes"
+from config import TTS_WITH_BLENDSHAPES_REALTIME_API 
 
 def parse_multipart_response(response):
     """
@@ -60,12 +57,11 @@ def get_tts_with_blendshapes(text, voice=None):
     Returns a tuple: (audio_bytes, blendshapes) if successful, else (None, None).
     """
     payload = {"text": text}
-    # NEW: Include 'voice' in payload if provided
     if voice is not None:
         payload["voice"] = voice
 
     try:
-        response = requests.post(NEW_TTS_ENDPOINT, json=payload)
+        response = requests.post(TTS_WITH_BLENDSHAPES_REALTIME_API , json=payload)
         response.raise_for_status()
         return parse_multipart_response(response)
     except Exception as e:
