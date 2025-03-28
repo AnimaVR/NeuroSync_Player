@@ -3,16 +3,18 @@
 # Businesses or organizations with **annual revenue of $1,000,000 or more** must obtain permission to use this software commercially.
 
 import socket
+from config import EMOTE_SERVER_ADDRESS, EMOTE_SERVER_PORT
 
 class EmoteConnect:
-    server_address = '127.0.0.1'
-    server_port = 7777
+    # Use configuration values from config.py
+    server_address = EMOTE_SERVER_ADDRESS
+    server_port = EMOTE_SERVER_PORT
 
     @classmethod
     def send_emote(cls, emote_name: str):
         """
         Sends the provided emote name.
-        This function creates a new connection each time, just like the C# implementation.
+        This function creates a new connection each time, similar to the C# implementation.
         """
         # Validate the emote name (ensures no empty or whitespace-only strings)
         if not emote_name.strip():
@@ -20,15 +22,16 @@ class EmoteConnect:
             return
 
         try:
+            # Create a new socket for each connection (mirroring the C# TcpClient behavior)
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
                 client.connect((cls.server_address, cls.server_port))
-              #  print(f"Connected to UnrealEngine emote receiver {cls.server_address}:{cls.server_port}")
+                # Convert the emote name to bytes (UTF-8 encoded) after trimming whitespace
                 message_bytes = emote_name.strip().encode('utf-8')
+                # Send the emote (using sendall to ensure all data is sent)
                 client.sendall(message_bytes)
-             #   print(f"Successfully sent emote: {emote_name}")
-
         except Exception as ex:
             print(f"Error while sending emote: {ex}")
+
 
 
 '''
