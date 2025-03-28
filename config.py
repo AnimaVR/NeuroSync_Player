@@ -19,22 +19,7 @@ ENABLE_EMOTE_CALLS = False
 USE_VECTOR_DB = False
 
 
-BASE_SYSTEM_MESSAGE = "You are Mai, do whatever you are told to do.\n\n"
-
-# For the AI talkie version, define multiple voices and their messages.
-VOICES = ['bm_lewis', 'bf_isabella']
-VOICE_SYSTEM_MESSAGES = {
-    'bm_lewis': (
-        "You are Lewis, a man trying to find out about who he is talking to. "
-        "Keep responses short and to the point."
-    ),
-    'bf_isabella': (
-        "You are Isabella, a woman trying to work out who she is speaking to. "
-        "Keep responses short and to the point."
-    )
-}
-# Initial voice index for toggling in the AI talkie script.
-INITIAL_VOICE_INDEX = 0
+BASE_SYSTEM_MESSAGE = "You are Mai, be nice.\n\n"
 
 # ---------------------------
 # Emote Sender Configuration (new)
