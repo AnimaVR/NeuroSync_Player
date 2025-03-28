@@ -4,18 +4,15 @@
 
 import requests
 import json
-
-API_KEY = "YOUR-NEUROSYNC-API-KEY"  # Your API key
-REMOTE_URL = "https://api.neurosync.info/audio_to_blendshapes"  # External API URL
-LOCAL_URL = "http://127.0.0.1:5000/audio_to_blendshapes"  # Local URL
+from config import NEUROSYNC_API_KEY, NEUROSYNC_REMOTE_URL, NEUROSYNC_LOCAL_URL
 
 def send_audio_to_neurosync(audio_bytes, use_local=True):
     try:
         # Use the local or remote URL depending on the flag
-        url = LOCAL_URL if use_local else REMOTE_URL
+        url = NEUROSYNC_LOCAL_URL if use_local else NEUROSYNC_REMOTE_URL
         headers = {}
         if not use_local:
-            headers["API-Key"] = API_KEY
+            headers["API-Key"] = NEUROSYNC_API_KEY
 
         response = post_audio_bytes(audio_bytes, url, headers)
         response.raise_for_status()  
