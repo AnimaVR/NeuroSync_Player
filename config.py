@@ -83,6 +83,7 @@ def get_llm_config(system_message=None):
     if system_message is None:
         system_message = BASE_SYSTEM_MESSAGE
     return {
+        "USE_VECTOR_DB":USE_VECTOR_DB,
         "USE_LOCAL_LLM": USE_LOCAL_LLM,
         "USE_STREAMING": USE_STREAMING,
         "LLM_API_URL": LLM_API_URL,
