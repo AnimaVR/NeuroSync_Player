@@ -1,8 +1,7 @@
 import requests
 import base64
 import os
-
-TRANSCRIPTION_SERVER_URL = 'http://127.0.0.1:6969/transcribe'
+from config import TRANSCRIPTION_SERVER_URL
 
 def transcribe_audio(audio_bytes, return_timestamps=False):
     """Transcribe audio with optional timestamps."""
@@ -15,10 +14,6 @@ def transcribe_audio(audio_bytes, return_timestamps=False):
                 'return_timestamps': return_timestamps
             }
         )
-
-        # Debugging output
-        print(f"Response Status Code: {response.status_code}")
-        print(f"Response Body: {response.text}")
 
         if response.status_code == 200:
             response_data = response.json()
@@ -43,7 +38,7 @@ def transcribe_and_save_audio(audio_path, long_form=False):
         audio_bytes = audio_file.read()
 
     transcription, timestamps = transcribe_audio(audio_bytes, return_timestamps=long_form)
-    print(f"audio as text : {transcription}") 
+    # print(f"audio as text : {transcription}") 
 
     if transcription:
         with open(transcription_path, 'w') as transcription_file:
