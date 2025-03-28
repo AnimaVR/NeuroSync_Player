@@ -1,9 +1,9 @@
 # utils/local_tts.py
 import requests
 
-LOCAL_TTS_URL = "http://127.0.0.1:8000/generate_speech"  # Update as needed
+from config import LOCAL_TTS_URL
 
-def call_local_tts(text, voice=None):  # NEW: Added optional 'voice' parameter
+def call_local_tts(text, voice=None): 
     """
     Calls the local TTS Flask endpoint to generate speech for the given (already-cleaned) text.
     Optionally, a voice can be specified.
