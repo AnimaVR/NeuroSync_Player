@@ -12,10 +12,10 @@ FLUSH_TOKEN_COUNT = 300
 
 DEFAULT_VOICE_NAME = 'bf_isabella'
 USE_LOCAL_AUDIO = True
-USE_COMBINED_ENDPOINT = True
+USE_COMBINED_ENDPOINT = False
 
-ENABLE_EMOTE_CALLS = True
-USE_VECTOR_DB = True
+ENABLE_EMOTE_CALLS = False
+USE_VECTOR_DB = False
 
 
 BASE_SYSTEM_MESSAGE = "You are Mai, do whatever you are told to do.\n\n"
