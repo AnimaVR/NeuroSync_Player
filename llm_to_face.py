@@ -2,34 +2,23 @@
 # For individuals and businesses earning **under $1M per year**, this software is licensed under the **MIT License**
 # Businesses or organizations with **annual revenue of $1,000,000 or more** must obtain permission to use this software commercially.
 
-
+# llm_to_face.py
 import pygame
 import keyboard  
 import time      
-
 from livelink.animations.default_animation import  stop_default_animation
-
 from utils.stt.transcribe_whisper import transcribe_audio
 from utils.audio.record_audio import record_audio_until_release
 from utils.vector_db.vector_db import vector_db
-
 from utils.llm.turn_processing import process_turn
 from utils.llm.llm_initialiser import initialize_system
-
-from config import (
-    BASE_SYSTEM_MESSAGE,
-    get_llm_config,
-    setup_warnings
-)
+from config import BASE_SYSTEM_MESSAGE, get_llm_config, setup_warnings
 
 setup_warnings()
-
 llm_config = get_llm_config(system_message=BASE_SYSTEM_MESSAGE)
-
 
 def main():
     system_objects = initialize_system()
-    
     socket_connection = system_objects['socket_connection']
     full_history = system_objects['full_history']
     chat_history = system_objects['chat_history']
@@ -44,7 +33,6 @@ def main():
         mode = input("Choose input mode: 't' for text, 'r' for push-to-talk, 'q' to quit: ").strip().lower()
         if mode == 'q':
             return
-    
     try:
         while True:
             if mode == 'r':
@@ -66,16 +54,7 @@ def main():
                 if user_input.lower() == 'q':
                     break
 
-            chat_history = process_turn(
-                user_input,
-                chat_history,
-                full_history,
-                llm_config,
-                chunk_queue,
-                audio_queue,
-                vector_db,
-                base_system_message=BASE_SYSTEM_MESSAGE,
-            )
+            chat_history = process_turn(user_input, chat_history, full_history, llm_config, chunk_queue, audio_queue, vector_db, base_system_message=BASE_SYSTEM_MESSAGE)
 
     finally:
         chunk_queue.join()
@@ -88,7 +67,6 @@ def main():
         default_animation_thread.join()
         pygame.quit()
         socket_connection.close()
-
-
+        
 if __name__ == "__main__":
     main()
