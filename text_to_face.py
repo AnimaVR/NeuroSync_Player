@@ -23,7 +23,7 @@ from utils.emote_sender.send_emote import EmoteConnect
 
 voice_name = 'af_nicole' # bf_isabella
 use_elevenlabs = False  # ElevenLabs or Local TTS - if using elevenlabs then use_combined_endpoint must be false and you must use https://github.com/AnimaVR/NeuroSync_Local_API for the blendshapes
-use_combined_endpoint = False  # Only set this true if you have the combined realtime API with TTS + blendshape in one call.
+use_combined_endpoint = False  # Only set this true if you have the combined realtime API with TTS + blendshape in one call https://github.com/AnimaVR/NeuroSync_Real-Time_API
 ENABLE_EMOTE_CALLS = False 
 
 if __name__ == "__main__":
