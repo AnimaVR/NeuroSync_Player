@@ -48,7 +48,7 @@ OPENAI_EMBEDDING_SIZE = 1536
 # Neurosync API Configurations (new)
 # ---------------------------
 
-NEUROSYNC_LOCAL_URL = "http://127.0.0.1:5000/audio_to_blendshapes"
+NEUROSYNC_LOCAL_URL = "http://127.0.0.1:5000/audio_to_blendshapes" # if using the realtime api below, you can still access this endpoint from it, just change the port to 6969
 
 # ---------------------------
 # TTS with Blendshapes Endpoint (new)
