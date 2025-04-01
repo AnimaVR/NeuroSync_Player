@@ -25,13 +25,29 @@ def apply_blink_to_facial_data(facial_data: List, default_animation_data: List[L
                 frame[blink_idx] = default_animation_data[default_idx][blink_idx]
 
 
-def pre_encode_facial_data(facial_data: List, py_face, fps: int = 60) -> List[bytes]:
+def smooth_facial_data(facial_data: list) -> list:
+    if len(facial_data) < 2:
+        return facial_data.copy()  
+
+    smoothed_data = [facial_data[0]]
+    for i in range(1, len(facial_data)):
+        previous_frame = facial_data[i - 1]
+        current_frame = facial_data[i]
+        averaged_frame = [(a + b) / 2 for a, b in zip(previous_frame, current_frame)]
+        smoothed_data.append(averaged_frame)
     
+    return smoothed_data
+
+def pre_encode_facial_data(facial_data: list, py_face, fps: int = 60, smooth: bool = True) -> list:
     apply_blink_to_facial_data(facial_data, default_animation_data)
+    
+    # If smoothing is enabled, apply smoothing to the facial data
+    if smooth:
+        facial_data = smooth_facial_data(facial_data)  
 
     encoded_data = []
     blend_in_frames = int(0.1 * fps)
-    blend_out_frames = int(0.3 * fps)
+    blend_out_frames = int(0.2 * fps)
 
     blend_in(facial_data, fps, py_face, encoded_data, blend_in_frames, default_animation_data)
 
