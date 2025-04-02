@@ -38,7 +38,9 @@ def smooth_facial_data(facial_data: list) -> list:
     
     return smoothed_data
 
-def pre_encode_facial_data(facial_data: list, py_face, fps: int = 60, smooth: bool = True) -> list:
+# smoothing shouldnt be needed, its just there if you scale too much and want to dial it back without losing scale.
+
+def pre_encode_facial_data(facial_data: list, py_face, fps: int = 60, smooth: bool = False) -> list:
     apply_blink_to_facial_data(facial_data, default_animation_data)
     
     # If smoothing is enabled, apply smoothing to the facial data
