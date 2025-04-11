@@ -14,17 +14,20 @@ from utils.files.file_utils import save_generated_data, initialize_directories
 from utils.generated_runners import run_audio_animation
 from utils.neurosync.multi_part_return import get_tts_with_blendshapes
 from utils.neurosync.neurosync_api_connect import send_audio_to_neurosync
-from utils.tts.eleven_labs import get_elevenlabs_audio
+from utils.tts.livepeer_tts import get_elevenlabs_audio
 from utils.tts.local_tts import call_local_tts
 from livelink.connect.livelink_init import create_socket_connection, initialize_py_face
 from livelink.animations.default_animation import default_animation_loop, stop_default_animation
+from utils.tts.livepeer_tts import get_livepeer_audio
 
 from utils.emote_sender.send_emote import EmoteConnect
 
-voice_name = 'af_nicole' # bf_isabella
+voice_name = 'Sarah' # bf_isabella
 use_elevenlabs = False  # ElevenLabs or Local TTS - if using elevenlabs then use_combined_endpoint must be false and you must use https://github.com/AnimaVR/NeuroSync_Local_API for the blendshapes
 use_combined_endpoint = False  # Only set this true if you have the combined realtime API with TTS + blendshape in one call https://github.com/AnimaVR/NeuroSync_Real-Time_API
 ENABLE_EMOTE_CALLS = False 
+use_livepeer = True
+livepeer_voice_description = "Jenna's voice is monotone yet slightly fast in delivery, with a very close recording that almost has no background noise."
 
 if __name__ == "__main__":
     initialize_directories()
@@ -57,6 +60,8 @@ if __name__ == "__main__":
                 else:
                     if use_elevenlabs:
                         audio_bytes = get_elevenlabs_audio(text_input, voice_name)
+                    elif use_livepeer:
+                        audio_bytes = get_livepeer_audio(text_input, livepeer_voice_description)
                     else:
                         audio_bytes = call_local_tts(text_input)                  
                     if audio_bytes:
