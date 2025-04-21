@@ -24,13 +24,13 @@ def apply_blendshapes(frame_data: np.ndarray, weight: float, py_face, default_an
         blended_value = (1 - weight) * default_value + weight * facial_value
         py_face.set_blendshape(FaceBlendShape(i), float(blended_value))
 
-def blend_in(facial_data, fps, py_face, encoded_data, blend_in_frames, default_animation_data):
+def blend_in(facial_data, py_face, encoded_data, blend_in_frames, default_animation_data):
     for frame_index in range(blend_in_frames):
         weight = frame_index / blend_in_frames
         apply_blendshapes(facial_data[frame_index], weight, py_face, default_animation_data)
         encoded_data.append(py_face.encode())
 
-def blend_out(facial_data, fps, py_face, encoded_data, blend_out_frames, default_animation_data):
+def blend_out(facial_data, py_face, encoded_data, blend_out_frames, default_animation_data):
     for frame_index in range(blend_out_frames):
         weight = frame_index / blend_out_frames
         reverse_index = len(facial_data) - blend_out_frames + frame_index
