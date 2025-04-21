@@ -4,38 +4,59 @@
 
 # blending_anims.py
 
-
 import time
 import numpy as np
-
+from typing import List
 from livelink.animations.default_animation import FaceBlendShape
 
+CUSTOM_BLEND_DURATIONS = {
+    FaceBlendShape.MouthClose: 0.1,
+    FaceBlendShape.JawOpen: 0.1,
+}
+DEFAULT_BLEND_DURATION = 0.5  # in seconds
+
+def get_blend_duration(shape_index: int) -> float:
+    shape = FaceBlendShape(shape_index)
+    return CUSTOM_BLEND_DURATIONS.get(shape, DEFAULT_BLEND_DURATION)
+
+
+def blend_in(facial_data, py_face, encoded_data, fps, default_animation_data):
+    total_blend_frames = int(DEFAULT_BLEND_DURATION * fps)
+
+    for frame_index in range(total_blend_frames):
+        # Progress through total blend window (0 to 1)
+        global_weight = frame_index / total_blend_frames
+        apply_blendshapes(facial_data[frame_index], global_weight, py_face, default_animation_data, fps)
+        encoded_data.append(py_face.encode())
+
+
+def blend_out(facial_data, py_face, encoded_data, fps, default_animation_data):
+    total_blend_frames = int(DEFAULT_BLEND_DURATION * fps)
+
+    for frame_index in range(total_blend_frames):
+        global_weight = frame_index / total_blend_frames
+        reverse_index = len(facial_data) - total_blend_frames + frame_index
+        apply_blendshapes(facial_data[reverse_index], 1.0 - global_weight, py_face, default_animation_data, fps)
+        encoded_data.append(py_face.encode())
+
+
+def apply_blendshapes(frame_data, global_weight: float, py_face, default_animation_data, fps: int):
+    for i in range(51):  # Only the first 51 blendshapes
+        shape = FaceBlendShape(i)
+        shape_duration = get_blend_duration(i)
+        shape_weight = min(global_weight / (shape_duration / DEFAULT_BLEND_DURATION), 1.0)
+
+        default_val = default_animation_data[0][i]
+        facial_val = frame_data[i]
+        blended_val = (1 - shape_weight) * default_val + shape_weight * facial_val
+
+        py_face.set_blendshape(shape, float(blended_val))
 
 def play_full_animation(facial_data, fps, py_face, socket_connection, blend_in_frames, blend_out_frames):
     for blend_shape_data in facial_data[blend_in_frames:-blend_out_frames]:
         apply_blendshapes(blend_shape_data, 1.0, py_face)
         socket_connection.sendall(py_face.encode())
         time.sleep(1 / fps)
-
-def apply_blendshapes(frame_data: np.ndarray, weight: float, py_face, default_animation_data):
-    for i in range(51):  # Apply the first 51 blendshapes (no neck at the moment)
-        default_value = default_animation_data[0][i]
-        facial_value = frame_data[i]
-        blended_value = (1 - weight) * default_value + weight * facial_value
-        py_face.set_blendshape(FaceBlendShape(i), float(blended_value))
-
-def blend_in(facial_data, py_face, encoded_data, blend_in_frames, default_animation_data):
-    for frame_index in range(blend_in_frames):
-        weight = frame_index / blend_in_frames
-        apply_blendshapes(facial_data[frame_index], weight, py_face, default_animation_data)
-        encoded_data.append(py_face.encode())
-
-def blend_out(facial_data, py_face, encoded_data, blend_out_frames, default_animation_data):
-    for frame_index in range(blend_out_frames):
-        weight = frame_index / blend_out_frames
-        reverse_index = len(facial_data) - blend_out_frames + frame_index
-        apply_blendshapes(facial_data[reverse_index], 1.0 - weight, py_face, default_animation_data)
-        encoded_data.append(py_face.encode())
 
 def blend_animation_start_end(data, blend_frames=16):
     last_frames = data[-blend_frames:]
