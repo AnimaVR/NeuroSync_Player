@@ -8,7 +8,7 @@ from typing import List
 
 from livelink.connect.livelink_init import create_socket_connection, FaceBlendShape
 from livelink.animations.default_animation import default_animation_data
-from livelink.animations.blending_anims import blend_in, blend_out  
+from livelink.animations.blending_anims import blend_in, blend_out, DEFAULT_BLEND_DURATION 
 
 
 def apply_blink_to_facial_data(facial_data: List, default_animation_data: List[List[float]]):
@@ -48,17 +48,14 @@ def pre_encode_facial_data(facial_data: list, py_face, fps: int = 60, smooth: bo
         facial_data = smooth_facial_data(facial_data)  
 
     encoded_data = []
-    blend_in_frames = int(0.1 * fps)
-    blend_out_frames = int(0.2 * fps)
+    blend_in(facial_data, py_face, encoded_data, fps, default_animation_data)
 
-    blend_in(facial_data, py_face, encoded_data, blend_in_frames, default_animation_data)
-
-    for frame_index, frame_data in enumerate(facial_data[blend_in_frames:-blend_out_frames]):
+    for frame_index, frame_data in enumerate(facial_data[int(DEFAULT_BLEND_DURATION * fps):-int(DEFAULT_BLEND_DURATION * fps)]):
         for i in range(min(len(frame_data), 51)):
             py_face.set_blendshape(FaceBlendShape(i), frame_data[i])
         encoded_data.append(py_face.encode())
-    
-    blend_out(facial_data, py_face, encoded_data, blend_out_frames, default_animation_data)
+
+    blend_out(facial_data, py_face, encoded_data, fps, default_animation_data)
     return encoded_data
 
 def send_pre_encoded_data_to_unreal(encoded_facial_data: List[bytes], start_event, fps: int, socket_connection=None):
