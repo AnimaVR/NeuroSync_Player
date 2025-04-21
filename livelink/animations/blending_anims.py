@@ -29,7 +29,6 @@ def blend_in(facial_data, fps, py_face, encoded_data, blend_in_frames, default_a
         weight = frame_index / blend_in_frames
         apply_blendshapes(facial_data[frame_index], weight, py_face, default_animation_data)
         encoded_data.append(py_face.encode())
-        time.sleep(1 / fps)
 
 def blend_out(facial_data, fps, py_face, encoded_data, blend_out_frames, default_animation_data):
     for frame_index in range(blend_out_frames):
@@ -37,7 +36,6 @@ def blend_out(facial_data, fps, py_face, encoded_data, blend_out_frames, default
         reverse_index = len(facial_data) - blend_out_frames + frame_index
         apply_blendshapes(facial_data[reverse_index], 1.0 - weight, py_face, default_animation_data)
         encoded_data.append(py_face.encode())
-        time.sleep(1 / fps)
 
 def blend_animation_start_end(data, blend_frames=16):
     last_frames = data[-blend_frames:]
