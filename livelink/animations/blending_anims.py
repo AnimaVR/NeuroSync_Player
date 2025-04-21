@@ -7,18 +7,70 @@
 import time
 import numpy as np
 from typing import List
+
 from livelink.animations.default_animation import FaceBlendShape
 
-CUSTOM_BLEND_DURATIONS = {
-    FaceBlendShape.MouthClose: 0.1,
-    FaceBlendShape.JawOpen: 0.1,
+
+# These indices will get fast blend durations
+FAST_BLENDSHAPES = {
+    FaceBlendShape.JawOpen.value,
+    FaceBlendShape.MouthClose.value
 }
-DEFAULT_BLEND_DURATION = 0.5  # in seconds
 
-def get_blend_duration(shape_index: int) -> float:
-    shape = FaceBlendShape(shape_index)
-    return CUSTOM_BLEND_DURATIONS.get(shape, DEFAULT_BLEND_DURATION)
 
+def generate_blend_frames(facial_data: List[np.ndarray], total_frames: int, default_animation_data,
+                          fps: int, only_indices: set, mode: str = 'in',
+                          active_duration_sec: float = None) -> List[np.ndarray]:
+    """
+    Generate a list of blended frames for given indices only.
+    active_duration_sec limits actual blending duration; the rest is pass-through.
+    """
+    blended = []
+
+    if active_duration_sec is None:
+        active_frames = total_frames
+    else:
+        active_frames = int(active_duration_sec * fps)
+
+    for frame_index in range(total_frames):
+        # Clamp weight based on active blending region
+        if frame_index < active_frames:
+            weight = frame_index / active_frames if mode == 'in' else 1.0 - (frame_index / active_frames)
+        else:
+            weight = 1.0 if mode == 'in' else 0.0  # fully blended or fully off
+
+        if mode == 'in':
+            frame_data = facial_data[frame_index]
+        else:  # blend-out
+            frame_data = facial_data[-total_frames + frame_index]
+
+        # Start with default or live values
+        base = np.array(default_animation_data[0][:51]) if mode == 'in' else np.copy(frame_data)
+        blended_frame = np.copy(base)
+
+        for i in only_indices:
+            default_val = default_animation_data[0][i]
+            target_val = frame_data[i]
+            blended_val = (1 - weight) * default_val + weight * target_val
+            blended_frame[i] = blended_val
+
+        blended.append(blended_frame)
+
+    return blended
+
+
+
+def combine_frame_streams(base_frames: List[np.ndarray], overlay_frames: List[np.ndarray], override_indices: set) -> List[np.ndarray]:
+    """
+    Merges two frame lists by applying `overlay_frames` values only at `override_indices`.
+    """
+    combined = []
+    for base, overlay in zip(base_frames, overlay_frames):
+        combined_frame = np.copy(base)
+        for i in override_indices:
+            combined_frame[i] = overlay[i]
+        combined.append(combined_frame)
+    return combined
 
 def blend_in(facial_data, py_face, encoded_data, fps, default_animation_data):
     total_blend_frames = int(DEFAULT_BLEND_DURATION * fps)
