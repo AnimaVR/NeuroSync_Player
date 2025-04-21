@@ -6,50 +6,70 @@
 
 import time
 import numpy as np
-from typing import List
+from typing import List, Set
 
 from livelink.animations.default_animation import FaceBlendShape
-
+default_animation_state = { 'current_index': 0 }
 
 # These indices will get fast blend durations
 FAST_BLENDSHAPES = {
     FaceBlendShape.JawOpen.value,
     FaceBlendShape.MouthClose.value
 }
-
-
-def generate_blend_frames(facial_data: List[np.ndarray], total_frames: int, default_animation_data,
-                          fps: int, only_indices: set, mode: str = 'in',
-                          active_duration_sec: float = None) -> List[np.ndarray]:
+def generate_blend_frames(
+    facial_data: List[np.ndarray],
+    total_frames: int,
+    default_animation_data: List[np.ndarray],
+    fps: int,
+    only_indices: Set[int],
+    mode: str = 'in',
+    active_duration_sec: float = None,
+    default_start_index: int = None  # CHANGED: accept start index override
+) -> List[np.ndarray]:
     """
     Generate a list of blended frames for given indices only.
     active_duration_sec limits actual blending duration; the rest is pass-through.
+    If default_start_index is not provided, uses the current playing index from state (for blend-in) or 0 (for blend-out).
     """
     blended = []
 
+    # determine number of active frames for blending
     if active_duration_sec is None:
         active_frames = total_frames
     else:
         active_frames = int(active_duration_sec * fps)
 
-    for frame_index in range(total_frames):
-        # Clamp weight based on active blending region
-        if frame_index < active_frames:
-            weight = frame_index / active_frames if mode == 'in' else 1.0 - (frame_index / active_frames)
+    # determine starting index for default animation
+    if default_start_index is None:
+        if mode == 'in':
+            default_start_index = default_animation_state['current_index']
         else:
-            weight = 1.0 if mode == 'in' else 0.0  # fully blended or fully off
+            default_start_index = 0   # CHANGED: restart default animation for blend-out
 
+    for frame_index in range(total_frames):
+        # compute blending weight
+        if frame_index < active_frames:
+            weight = (frame_index / active_frames) if mode == 'in' else 1.0 - (frame_index / active_frames)
+        else:
+            weight = 1.0 if mode == 'in' else 0.0
+
+        # determine target frame_data for blending
         if mode == 'in':
             frame_data = facial_data[frame_index]
-        else:  # blend-out
+        else:
             frame_data = facial_data[-total_frames + frame_index]
 
-        # Start with default or live values
-        base = np.array(default_animation_data[0][:51]) if mode == 'in' else np.copy(frame_data)
-        blended_frame = np.copy(base)
+        # compute correct base index, wrapping if needed
+        idx = (default_start_index + frame_index) % len(default_animation_data)
+        if mode == 'in':
+            base = np.array(default_animation_data[idx][:51])
+        else:
+            base = np.copy(frame_data)
 
+        blended_frame = np.copy(base)
+        # perform per-index blending
         for i in only_indices:
-            default_val = default_animation_data[0][i]
+            default_val = default_animation_data[idx][i]
             target_val = frame_data[i]
             blended_val = (1 - weight) * default_val + weight * target_val
             blended_frame[i] = blended_val
@@ -57,8 +77,6 @@ def generate_blend_frames(facial_data: List[np.ndarray], total_frames: int, defa
         blended.append(blended_frame)
 
     return blended
-
-
 
 def combine_frame_streams(base_frames: List[np.ndarray], overlay_frames: List[np.ndarray], override_indices: set) -> List[np.ndarray]:
     """
