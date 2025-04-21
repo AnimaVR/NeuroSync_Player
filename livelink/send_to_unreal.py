@@ -8,52 +8,19 @@ from typing import List
 
 from livelink.connect.livelink_init import create_socket_connection, FaceBlendShape
 from livelink.animations.default_animation import default_animation_data
+
+
 from livelink.animations.blending_anims import (
     generate_blend_frames,
     combine_frame_streams,
     FAST_BLENDSHAPES
 )
-
-
-def apply_blink_to_facial_data(facial_data: List, default_animation_data: List[List[float]]):
-    """
-    Updates each frame in facial_data in-place by setting the blink indices (EyeBlinkLeft, EyeBlinkRight)
-    to the values from default_animation_data. This ensures that the blink values are present before any blending.
-    """
-    blink_indices = {FaceBlendShape.EyeBlinkLeft.value, FaceBlendShape.EyeBlinkRight.value}
-    default_len = len(default_animation_data)
-    for idx, frame in enumerate(facial_data):
-        default_idx = idx % default_len
-        for blink_idx in blink_indices:
-            if blink_idx < len(frame):
-                frame[blink_idx] = default_animation_data[default_idx][blink_idx]
-
-
-def smooth_facial_data(facial_data: list) -> list:
-    if len(facial_data) < 2:
-        return facial_data.copy()  
-
-    smoothed_data = [facial_data[0]]
-    for i in range(1, len(facial_data)):
-        previous_frame = facial_data[i - 1]
-        current_frame = facial_data[i]
-        averaged_frame = [(a + b) / 2 for a, b in zip(previous_frame, current_frame)]
-        smoothed_data.append(averaged_frame)
-    
-    return smoothed_data
-
-
-
-
 def pre_encode_facial_data(facial_data: list, py_face, fps: int = 60, smooth: bool = False) -> list:
-    apply_blink_to_facial_data(facial_data, default_animation_data) 
-    
     encoded_data = []
 
     fast_duration = 0.1
     slow_duration = 0.5
 
-    fast_blend_frames = int(fast_duration * fps)
     slow_blend_frames = int(slow_duration * fps)
 
     # --- Blend-in ---
@@ -102,6 +69,37 @@ def pre_encode_facial_data(facial_data: list, py_face, fps: int = 60, smooth: bo
         encoded_data.append(py_face.encode())
 
     return encoded_data
+
+
+def apply_blink_to_facial_data(facial_data: List, default_animation_data: List[List[float]]):
+    """
+    Updates each frame in facial_data in-place by setting the blink indices (EyeBlinkLeft, EyeBlinkRight)
+    to the values from default_animation_data. This ensures that the blink values are present before any blending.
+    """
+    blink_indices = {FaceBlendShape.EyeBlinkLeft.value, FaceBlendShape.EyeBlinkRight.value}
+    default_len = len(default_animation_data)
+    for idx, frame in enumerate(facial_data):
+        default_idx = idx % default_len
+        for blink_idx in blink_indices:
+            if blink_idx < len(frame):
+                frame[blink_idx] = default_animation_data[default_idx][blink_idx]
+
+
+def smooth_facial_data(facial_data: list) -> list:
+    if len(facial_data) < 2:
+        return facial_data.copy()  
+
+    smoothed_data = [facial_data[0]]
+    for i in range(1, len(facial_data)):
+        previous_frame = facial_data[i - 1]
+        current_frame = facial_data[i]
+        averaged_frame = [(a + b) / 2 for a, b in zip(previous_frame, current_frame)]
+        smoothed_data.append(averaged_frame)
+    
+    return smoothed_data
+
+
+
 
 def send_pre_encoded_data_to_unreal(encoded_facial_data: List[bytes], start_event, fps: int, socket_connection=None):
     try:
