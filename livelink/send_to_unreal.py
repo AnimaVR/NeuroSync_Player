@@ -46,6 +46,8 @@ def smooth_facial_data(facial_data: list) -> list:
 
 
 def pre_encode_facial_data(facial_data: list, py_face, fps: int = 60, smooth: bool = False) -> list:
+    apply_blink_to_facial_data(facial_data, default_animation_data) 
+    
     encoded_data = []
 
     fast_duration = 0.1
