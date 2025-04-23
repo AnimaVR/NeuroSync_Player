@@ -6,6 +6,5 @@ requests==2.32.3
 PyAudio==0.2.14
 soundfile==0.13.1
 pydub==0.25.1
-audioop-lts==0.2.1
 scipy==1.15.2
 openai==1.75.0
