@@ -16,11 +16,16 @@ from livelink.animations.blending_anims import (
     FAST_BLENDSHAPES
 )
 def pre_encode_facial_data(facial_data: list, py_face, fps: int = 60, smooth: bool = False) -> list:
-    apply_blink_to_facial_data(facial_data, default_animation_data)
     encoded_data = []
 
+    total_duration = len(facial_data) / fps 
+    
+    if total_duration < 1.0:
+        slow_duration = 0.2  
+    else:
+        slow_duration = 0.5
+    
     fast_duration = 0.1
-    slow_duration = 0.5
 
     slow_blend_frames = int(slow_duration * fps)
 
