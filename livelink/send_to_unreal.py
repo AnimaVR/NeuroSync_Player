@@ -15,6 +15,9 @@ from livelink.animations.blending_anims import (
     combine_frame_streams,
     FAST_BLENDSHAPES
 )
+
+
+
 def pre_encode_facial_data(facial_data: list, py_face, fps: int = 60, smooth: bool = False) -> list:
     encoded_data = []
 
@@ -75,6 +78,7 @@ def pre_encode_facial_data(facial_data: list, py_face, fps: int = 60, smooth: bo
         encoded_data.append(py_face.encode())
 
     return encoded_data
+
 
 
 def apply_blink_to_facial_data(facial_data: List, default_animation_data: List[List[float]]):
