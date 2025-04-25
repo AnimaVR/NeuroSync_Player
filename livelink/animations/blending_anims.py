@@ -24,59 +24,67 @@ def generate_blend_frames(
     only_indices: Set[int],
     mode: str = 'in',
     active_duration_sec: float = None,
-    default_start_index: int = None  # CHANGED: accept start index override
+    default_start_index: int = None          # accepts override for idle-loop offset
 ) -> List[np.ndarray]:
     """
-    Generate a list of blended frames for given indices only.
-    active_duration_sec limits actual blending duration; the rest is pass-through.
-    If default_start_index is not provided, uses the current playing index from state (for blend-in) or 0 (for blend-out).
+    Generate a list of blended frames.
+    * For 'in' we fade from the idle pose into the recorded facial_data.
+    * For 'out' we fade back from facial_data into the idle pose,
+      **always starting at frame 0 of the idle animation** (unless
+      default_start_index is explicitly overridden).
+
+    Parameters
+    ----------
+    ...
+    default_start_index : int
+        Starting frame of the default animation to blend toward/away from.
+        If None:
+           - 'in'  → current live frame
+           - 'out' → 0  (so the first idle frame is the blend target)  # <<< CHANGED
     """
     blended = []
 
-    # determine number of active frames for blending
-    if active_duration_sec is None:
-        active_frames = total_frames
-    else:
-        active_frames = int(active_duration_sec * fps)
+    # ---------------- active blend duration ----------------
+    active_frames = int(active_duration_sec * fps) if active_duration_sec else total_frames
 
-    # determine starting index for default animation
+    # ---------------- default-animation start index ----------------
     if default_start_index is None:
-        if mode == 'in':
-            default_start_index = default_animation_state['current_index']
-        else:
-            default_start_index = 0   # CHANGED: restart default animation for blend-out
+        default_start_index = (
+            default_animation_state['current_index'] if mode == 'in' else 0  # <<< CHANGED
+        )
 
+    # ---------------- frame-by-frame blend ----------------
     for frame_index in range(total_frames):
-        # compute blending weight
+        # weight ramps 0→1 for 'in', 1→0 for 'out'
         if frame_index < active_frames:
             weight = (frame_index / active_frames) if mode == 'in' else 1.0 - (frame_index / active_frames)
         else:
             weight = 1.0 if mode == 'in' else 0.0
 
-        # determine target frame_data for blending
-        if mode == 'in':
-            frame_data = facial_data[frame_index]
-        else:
-            frame_data = facial_data[-total_frames + frame_index]
+        # target facial frame
+        frame_data = (
+            facial_data[frame_index] if mode == 'in'
+            else facial_data[-total_frames + frame_index]
+        )
 
-        # compute correct base index, wrapping if needed
+        # idle-loop frame (wraps around)
         idx = (default_start_index + frame_index) % len(default_animation_data)
-        if mode == 'in':
-            base = np.array(default_animation_data[idx][:51])
-        else:
-            base = np.copy(frame_data)
 
+        # -------- base pose --------
+        # Always start from the idle animation, even for 'out'.            # <<< CHANGED
+        base = np.array(default_animation_data[idx][:51])
+
+        # -------- blend only selected indices --------
         blended_frame = np.copy(base)
-        # perform per-index blending
         for i in only_indices:
             default_val = default_animation_data[idx][i]
-            target_val = frame_data[i]
-            blended_val = (1 - weight) * default_val + weight * target_val
-            blended_frame[i] = blended_val
+            target_val  = frame_data[i]
+            blended_frame[i] = (1 - weight) * default_val + weight * target_val
 
         blended.append(blended_frame)
 
     return blended
+
 
 def combine_frame_streams(base_frames: List[np.ndarray], overlay_frames: List[np.ndarray], override_indices: set) -> List[np.ndarray]:
     """
