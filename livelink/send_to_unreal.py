@@ -13,26 +13,40 @@ from livelink.animations.default_animation import default_animation_data
 from livelink.animations.blending_anims import (
     generate_blend_frames,
     combine_frame_streams,
-    FAST_BLENDSHAPES
+    FAST_BLENDSHAPES,
+    default_animation_state,
 )
 
 
 
 def pre_encode_facial_data(facial_data: list, py_face, fps: int = 60, smooth: bool = False) -> list:
+    """
+    Encodes the full stream:
+    1. Blend-IN (idle → capture)
+    2. Main captured frames
+    3. Blend-OUT (capture → idle **frame 0**)
+
+    Returns
+    -------
+    encoded_data : list[bytes]
+        Ready-to-send UDP packets.
+    """
     encoded_data = []
 
-    total_duration = len(facial_data) / fps 
-    
-    if total_duration < 1.0:
-        slow_duration = 0.2  
-    else:
-        slow_duration = 0.5
-    
-    fast_duration = 0.1
+    # ------------------------------------------------------------------
+    # Durations for the three phases
+    # ------------------------------------------------------------------
+    total_duration = len(facial_data) / fps
+    slow_duration  = 0.3 if total_duration < 1.0 else 0.5
+    if total_duration < 0.5:
+        slow_duration = 0.2
 
+    fast_duration  = 0.1                    # jaw/mouth quick ease
     slow_blend_frames = int(slow_duration * fps)
 
-    # --- Blend-in ---
+    # ------------------------------------------------------------------
+    # --------------------------- BLEND-IN -----------------------------
+    # ------------------------------------------------------------------
     fast_blend_in = generate_blend_frames(
         facial_data, slow_blend_frames, default_animation_data, fps,
         FAST_BLENDSHAPES, mode='in', active_duration_sec=fast_duration
@@ -50,24 +64,34 @@ def pre_encode_facial_data(facial_data: list, py_face, fps: int = 60, smooth: bo
             py_face.set_blendshape(FaceBlendShape(i), frame[i])
         encoded_data.append(py_face.encode())
 
-    # --- Main loop ---
+    # ------------------------------------------------------------------
+    # ----------------------- MAIN CAPTURE FRAMES ----------------------
+    # ------------------------------------------------------------------
     main_start = slow_blend_frames
-    main_end = len(facial_data) - slow_blend_frames
+    main_end   = len(facial_data) - slow_blend_frames
 
     for frame_data in facial_data[main_start:main_end]:
         for i in range(51):
             py_face.set_blendshape(FaceBlendShape(i), frame_data[i])
         encoded_data.append(py_face.encode())
 
-    # --- Blend-out ---
+    # ------------------------------------------------------------------
+    # -------------------------- BLEND-OUT -----------------------------
+    # ------------------------------------------------------------------
+
+    # ► Reset the shared idle-loop index so both threads agree            # <<< NEW
+    default_animation_state['current_index'] = 0
+
     fast_blend_out = generate_blend_frames(
         facial_data, slow_blend_frames, default_animation_data, fps,
-        FAST_BLENDSHAPES, mode='out', active_duration_sec=fast_duration
+        FAST_BLENDSHAPES, mode='out', active_duration_sec=fast_duration,
+        default_start_index=0                                             # <<< NEW
     )
 
     slow_blend_out = generate_blend_frames(
         facial_data, slow_blend_frames, default_animation_data, fps,
-        set(range(51)) - FAST_BLENDSHAPES, mode='out'
+        set(range(51)) - FAST_BLENDSHAPES, mode='out',
+        default_start_index=0                                             # <<< NEW
     )
 
     blend_out_frames = combine_frame_streams(slow_blend_out, fast_blend_out, FAST_BLENDSHAPES)
@@ -78,7 +102,6 @@ def pre_encode_facial_data(facial_data: list, py_face, fps: int = 60, smooth: bo
         encoded_data.append(py_face.encode())
 
     return encoded_data
-
 
 
 def apply_blink_to_facial_data(facial_data: List, default_animation_data: List[List[float]]):
