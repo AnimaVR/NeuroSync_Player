@@ -32,7 +32,7 @@ def pre_encode_facial_data(facial_data: list, py_face, fps: int = 60, smooth: bo
         Ready-to-send UDP packets.
     """
     encoded_data = []
-    apply_blink_to_facial_data(facial_data)
+    apply_blink_to_facial_data(facial_data, default_animation_data)
     # ------------------------------------------------------------------
     # Durations for the three phases
     # ------------------------------------------------------------------
