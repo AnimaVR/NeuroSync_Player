@@ -12,12 +12,14 @@ from livelink.animations.blending_anims import blend_animation_start_end
 from livelink.animations.blending_anims import default_animation_state, blend_animation_start_end
 
 def load_animation(csv_path):
-    """
-    Loads the default animation CSV file
-    Returns the animation data as a NumPy array.
-    """
     data = pd.read_csv(csv_path)
+
     data = data.drop(columns=['Timecode', 'BlendshapeCount'])
+    # zero'ing eyes so they match the generation position, do some eye control from Unreal or manually.
+    cols_to_zero = [1, 2, 3, 4, 8, 9, 10, 11]
+    cols_to_zero = [i for i in cols_to_zero if i < data.shape[1]] 
+    data.iloc[:, cols_to_zero] = 0.0
+
     return data.values
 # ==================== DEFAULT ANIMATION SETUP ====================
 
