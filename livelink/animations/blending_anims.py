@@ -14,7 +14,11 @@ default_animation_state = { 'current_index': 0 }
 # These indices will get fast blend durations
 FAST_BLENDSHAPES = {
     FaceBlendShape.JawOpen.value,
-    FaceBlendShape.MouthClose.value
+    FaceBlendShape.MouthClose.value,
+    FaceBlendShape.MouthFunnel.value,
+    FaceBlendShape.MouthPucker.value,
+    FaceBlendShape.MouthLeft.value,
+    FaceBlendShape.MouthRight.value,
 }
 def generate_blend_frames(
     facial_data: List[np.ndarray],
