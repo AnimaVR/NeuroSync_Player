@@ -30,32 +30,39 @@ def adjust_animation_data_length(facial_data, animation_data):
             extended.append(animation_data[i % animation_length])
         return extended
 
-def merge_animation_data_into_facial_data(facial_data, animation_data, dimensions, alpha=0.8):
-
+def merge_animation_data_into_facial_data(facial_data, animation_data, dimensions, alpha=1.0):
     animation_data = adjust_animation_data_length(facial_data, animation_data)
-    
     num_frames = len(facial_data)
 
     for i in range(num_frames):
         for dim in dimensions:
             delta = animation_data[i][dim]
-            new_value = facial_data[i][dim] + alpha * delta
-            new_value = min(max(new_value, 0.0), 1.0)
-            facial_data[i][dim] = new_value
-            
+
+            if delta <= 0.0:
+                continue  # skip non-positive changes
+
+            scaled_delta = alpha * delta
+            candidate_value = facial_data[i][dim] + scaled_delta
+
+            if candidate_value > facial_data[i][dim]:
+                facial_data[i][dim] = min(candidate_value, 1.0)  # clamp to 1.0
+
     return facial_data
 
-def merge_emotion_data_into_facial_data_wrapper(facial_data, emotion_animation_data):
 
+
+
+def merge_emotion_data_into_facial_data_wrapper(facial_data, emotion_animation_data):
+    from neurosync.api.animations.face_blend_shapes import FaceBlendShape
     dimensions = [
-        FaceBlendShape.JawForward.value,
-        FaceBlendShape.JawLeft.value,
-        FaceBlendShape.JawRight.value,
+      #  FaceBlendShape.JawForward.value,
+      #  FaceBlendShape.JawLeft.value,
+      #  FaceBlendShape.JawRight.value,
        # FaceBlendShape.JawOpen.value,
 
        # FaceBlendShape.MouthClose.value,
-       # FaceBlendShape.MouthFunnel.value,       # Added .value
-       # FaceBlendShape.MouthPucker.value,        # Added .value
+     #   FaceBlendShape.MouthFunnel.value,       # Added .value
+      #  FaceBlendShape.MouthPucker.value,        # Added .value
         FaceBlendShape.MouthLeft.value,
         FaceBlendShape.MouthRight.value,         # Added .value
         FaceBlendShape.MouthSmileLeft.value,     # Added .value
@@ -66,8 +73,8 @@ def merge_emotion_data_into_facial_data_wrapper(facial_data, emotion_animation_d
         FaceBlendShape.MouthDimpleRight.value,   # Added .value
         FaceBlendShape.MouthStretchLeft.value,   # Added .value
         FaceBlendShape.MouthStretchRight.value,
-        FaceBlendShape.MouthRollLower.value,     # Added .value
-        FaceBlendShape.MouthRollUpper.value,     # Added .value
+     #   FaceBlendShape.MouthRollLower.value,     # Added .value
+     #   FaceBlendShape.MouthRollUpper.value,     # Added .value
         FaceBlendShape.MouthShrugLower.value,      # Added .value
         FaceBlendShape.MouthShrugUpper.value,      # Added .value
         FaceBlendShape.MouthPressLeft.value,       # Added .value
@@ -105,3 +112,4 @@ def merge_emotion_data_into_facial_data_wrapper(facial_data, emotion_animation_d
     facial_data = merge_animation_data_into_facial_data(facial_data, emotion_animation_data, dimensions)
     
     return facial_data
+
