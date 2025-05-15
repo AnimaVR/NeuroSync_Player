@@ -75,12 +75,12 @@ def merge_emotion_data_into_facial_data_wrapper(facial_data, emotion_animation_d
         FaceBlendShape.MouthStretchRight.value,
      #   FaceBlendShape.MouthRollLower.value,     # Added .value
      #   FaceBlendShape.MouthRollUpper.value,     # Added .value
-        FaceBlendShape.MouthShrugLower.value,      # Added .value
+    #    FaceBlendShape.MouthShrugLower.value,      # Added .value
         FaceBlendShape.MouthShrugUpper.value,      # Added .value
         FaceBlendShape.MouthPressLeft.value,       # Added .value
         FaceBlendShape.MouthPressRight.value,      # Added .value
-        FaceBlendShape.MouthLowerDownLeft.value,   # Added .value
-        FaceBlendShape.MouthLowerDownRight.value,  # Added .value
+     #   FaceBlendShape.MouthLowerDownLeft.value,   # Added .value
+    #    FaceBlendShape.MouthLowerDownRight.value,  # Added .value
         FaceBlendShape.MouthUpperUpLeft.value,     # Added .value
         FaceBlendShape.MouthUpperUpRight.value,    # Added .value
 
