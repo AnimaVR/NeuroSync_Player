@@ -53,7 +53,7 @@ def merge_animation_data_into_facial_data(facial_data, animation_data, dimension
 
 
 def merge_emotion_data_into_facial_data_wrapper(facial_data, emotion_animation_data):
-    from neurosync.api.animations.face_blend_shapes import FaceBlendShape
+    from livelink.connect.faceblendshapes import FaceBlendShape
     dimensions = [
       #  FaceBlendShape.JawForward.value,
       #  FaceBlendShape.JawLeft.value,
